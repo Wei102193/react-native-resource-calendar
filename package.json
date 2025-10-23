@@ -1,0 +1,75 @@
+{
+  "name": "react-native-resource-calendar",
+  "version": "1.0.0",
+  "description": "A flexible, performant, and themeable React Native calendar for scheduling apps",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "react-native": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "react-native": "./dist/index.js",
+      "import": "./dist/index.js",
+      "require": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsup src/index.tsx --dts --format esm,cjs --clean --external react,react-native,react-native-svg,react-native-reanimated,react-native-gesture-handler,@shopify/flash-list,@shopify/react-native-skia,react-content-loader,expo-haptics",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wei102193/react-native-resource-calendar.git"
+  },
+  "keywords": [
+    "react-native",
+    "calendar",
+    "scheduler",
+    "timeline",
+    "expo",
+    "zustand"
+  ],
+  "author": "Wei Chen",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/wei102193/react-native-resource-calendar/issues"
+  },
+  "homepage": "https://github.com/wei102193/react-native-resource-calendar#readme",
+  "devDependencies": {
+    "@types/lodash": "^4.17.20",
+    "@types/react": "^19.2.2",
+    "tsup": "^8.5.0",
+    "typescript": "^5.9.3"
+  },
+  "peerDependencies": {
+    "@shopify/flash-list": ">=1.7.6",
+    "@shopify/react-native-skia": ">=2.0.2",
+    "expo-haptics": ">=14.1.4",
+    "react": ">=18",
+    "react-content-loader": ">=7.0.2",
+    "react-native": ">=0.79.5",
+    "react-native-gesture-handler": ">=2.24.0",
+    "react-native-reanimated": ">=3.17.4",
+    "react-native-svg": ">=15.11.2"
+  },
+  "dependencies": {
+    "date-fns": "^4.1.0",
+    "date-fns-tz": "^3.2.0",
+    "lodash": "^4.17.21",
+    "zustand": "^5.0.8"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=16"
+  }
+}

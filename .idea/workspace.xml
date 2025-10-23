@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="a16ebe1d-70c4-4141-bf6a-d604b032fbd3" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/LICENSE" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/components/Calendar.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/components/DisabledBlocks.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/components/DisabledIntervals.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/components/DraggableEvent.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/components/EventBlock.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/components/EventBlocks.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/components/EventGridBlocks.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/components/ResourcesComponent.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/components/TimeLabels.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/components/common/Badge.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/components/common/layout/Center.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/components/common/layout/Col.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/components/common/layout/Hidden.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/components/common/layout/Row.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/index.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/store/StoreFeeder.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/store/bindings/BindingProvider.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/store/bindings/ZustandBinding.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/store/bindings/calendarStoreBinding.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/theme/ThemeContext.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/theme/resolveFont.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/types/calendarTypes.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/utilities/helpers.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tsconfig.json" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ComposerSettings">
+    <execution />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="TypeScript JSX File" />
+        <option value="TypeScript File" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="PhpWorkspaceProjectConfiguration" interpreter_name="$USER_HOME$/Library/Application Support/Herd/bin/php" />
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 4
+}</component>
+  <component name="ProjectId" id="34OMJBZH4qz6YOMddl9HbPlnh7L" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/Users/wei-dev/Projects/apps/react-native-resource-calendar/src&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;,
+    &quot;ts.external.directory.path&quot;: &quot;/Users/wei-dev/Projects/apps/react-native-resource-calendar/node_modules/typescript/lib&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  }
+}</component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/src" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/src/utilities" />
+      <recent name="$PROJECT_DIR$/src/types" />
+      <recent name="$PROJECT_DIR$/src/components" />
+    </key>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-js-predefined-d6986cc7102b-1632447f56bf-JavaScript-PS-243.26053.13" />
+        <option value="bundled-php-predefined-a98d8de5180a-1ec7b7818973-com.jetbrains.php.sharedIndexes-PS-243.26053.13" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="a16ebe1d-70c4-4141-bf6a-d604b032fbd3" name="Changes" comment="" />
+      <created>1761080090906</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1761080090906</updated>
+      <workItem from="1761080091945" duration="573000" />
+      <workItem from="1761082672060" duration="8373000" />
+      <workItem from="1761166160252" duration="16185000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+</project>
