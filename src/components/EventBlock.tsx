@@ -138,7 +138,8 @@ const EventBlock: React.FC<EventBlockProps> = React.memo(({
                                 allowFontScaling={false}
                                 style={[{
                                     fontFamily: timeFace,
-                                    fontSize: getTextSize(hourHeight)
+                                    fontSize: getTextSize(hourHeight),
+                                    color: '#737373'
                                 }, resolved?.desc]}>{event?.description}</Text>
                         </>
                 }
@@ -155,6 +156,7 @@ const EventBlock: React.FC<EventBlockProps> = React.memo(({
 
 const styles = StyleSheet.create({
     event: {
+        backgroundColor: '#4d959c',
         position: 'absolute',
         borderRadius: 5,
         padding: 2,

@@ -152,6 +152,7 @@ export const DraggableEvent = ({
 
 const styles = StyleSheet.create({
     event: {
+        backgroundColor: '#4d959c',
         position: 'absolute',
         borderRadius: 5,
         padding: 2,
