@@ -259,3 +259,77 @@ export default function App() {
   );
 }
 ```
+
+## ⚙️ Calendar Props
+
+The `Calendar` component accepts a flexible set of props for customizing layout, theme, and interactivity.
+
+| Prop | Type | Default | Description |
+|------|------|----------|-------------|
+| **`date`** | `Date` | `new Date()` | The current date displayed in the calendar. |
+| **`resources`** | `Array<Resource>` | `[]` | List of resource objects (columns). Each resource typically contains `id`, `name`, `events`, `disabledBlocks`, and `disableIntervals`. |
+| **`numberOfColumns`** | `number` | `1` | Number of resource columns displayed side-by-side. |
+| **`startMinutes`** | `number` | `480` (8:00 AM) | The starting minute offset of the visible timeline. |
+| **`hourHeight`** | `number` | `60` | Height in pixels for one hour block (controls zoom level). |
+| **`overLappingLayoutMode`** | `'stack'` or `'side'` | `'stack'` | Determines how overlapping events are rendered (stacked vertically or side-by-side). |
+| **`theme`** | `Partial<CalendarTheme>` | `undefined` | Customize typography, spacing, and colors of the calendar. See [Theming](#🎨-theming). |
+| **`eventSlots`** | `Partial<EventSlotRenderers>` | — | Allows overriding built-in event slot components (e.g. Body, TopRight). Useful for custom visuals. |
+| **`eventStyleOverrides`** | `(event: Event) => ViewStyle` | — | Custom styling logic for event blocks (e.g., color coding). |
+| **`isEventSelected`** | `(event: Event) => boolean` | — | Determines if an event is currently selected. |
+| **`isEventDisabled`** | `(event: Event) => boolean` | — | Determines if an event is disabled (e.g., non-editable). |
+| **`onEventPress`** | `(event: Event) => void` | — | Called when a user taps on an event. |
+| **`onEventLongPress`** | `(event: Event) => void` | — | Called when an event is long-pressed. Useful for showing contextual actions. |
+| **`onBlockLongPress`** | `(blockInfo: {resourceId: ResourceId; from: number; to: number;}) => void` | — | Fired when an empty time block is long-pressed. |
+| **`onDisabledBlockPress`** | `(blockInfo: DisabledBlock) => void` | — | Fired when a user taps a disabled block (e.g., lunch hour). |
+| **`onResourcePress`** | `(resource: Resource) => void` | — | Called when a resource (column header) is pressed. |
+| **`onEventDragStart`** | `(event: Event) => void` | — | Triggered when a drag operation starts. |
+| **`onEventDragEnd`** | `(draft: DraggedEventDraft) => void` | — | Triggered when an event is dropped — provides updated position and resource. |
+| **`onEventResize`** | `(event: Event, newFrom: number, newTo: number) => void` | — | Called when an event’s duration is resized. |
+| **`isEventSelectable`** | `(event: Event) => boolean` | — | Determines if an event can be selected by the user. |
+| **`renderHeader`** | `() => ReactNode` | — | Optional custom header renderer (e.g., date switcher). |
+
+---
+
+### 🧩 Related Types
+
+```ts
+type Resource = {
+  id: number | string;
+  name: string;
+  avatar?: string;
+  events?: Event[];
+  disabledBlocks?: DisabledBlock[];
+  disableIntervals?: DisabledInterval[];
+};
+
+type Event = {
+  id: number | string;
+  title: string;
+  resourceId: number | string;
+  from: number; // in minutes
+  to: number;   // in minutes
+  description?: string;
+  meta?: Record<string, any>;
+};
+
+type DisabledBlock = {
+  id: number | string;
+  resourceId: number | string;
+  from: number;
+  to: number;
+  title?: string;
+};
+
+type DisabledInterval = {
+  resourceId: number | string;
+  from: number;
+  to: number;
+};
+
+type DraggedEventDraft = {
+  event: Event;
+  from: number;
+  to: number;
+  resourceId: number | string;
+};
+```
