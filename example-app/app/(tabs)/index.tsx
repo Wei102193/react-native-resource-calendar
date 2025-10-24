@@ -246,10 +246,8 @@ export default function TabOneScreen() {
                             setSelectedEvent(null);
                         }}
                     />
-
                 </View>
             }
-
         </View>
     );
 }
