@@ -23,6 +23,7 @@ Expo compatibility.
 npm install react-native-resource-calendar
 # or
 yarn add react-native-resource-calendar
+```
 
 ## 🚀 Quick Start
 
@@ -255,3 +256,4 @@ export default function App() {
     </CalendarBindingProvider>
   );
 }
+```
