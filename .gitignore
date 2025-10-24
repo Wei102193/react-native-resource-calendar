@@ -5,5 +5,5 @@ dist
 .vscode
 npm-debug.log*
 yarn-debug.log*
-example/node_modules
-example/.expo
+example-app/node_modules
+example-app/.expo
