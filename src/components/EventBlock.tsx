@@ -130,7 +130,8 @@ const EventBlock: React.FC<EventBlockProps> = React.memo(({
                                     allowFontScaling={false}
                                     style={[{
                                         fontFamily: titleFace,
-                                        fontSize: getTextSize(hourHeight)
+                                        fontSize: getTextSize(hourHeight),
+                                        fontWeight: "700"
                                     }, resolved?.title]}
                                 >{event?.title}</Text>
                             </Row>
@@ -139,7 +140,7 @@ const EventBlock: React.FC<EventBlockProps> = React.memo(({
                                 style={[{
                                     fontFamily: timeFace,
                                     fontSize: getTextSize(hourHeight),
-                                    color: '#737373'
+                                    fontWeight: "600"
                                 }, resolved?.desc]}>{event?.description}</Text>
                         </>
                 }
