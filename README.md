@@ -265,71 +265,75 @@ export default function App() {
 The `Calendar` component accepts a flexible set of props for customizing layout, theme, and interactivity.
 
 | Prop | Type | Default | Description |
-|------|------|----------|-------------|
-| **`date`** | `Date` | `new Date()` | The current date displayed in the calendar. |
-| **`resources`** | `Array<Resource>` | `[]` | List of resource objects (columns). Each resource typically contains `id`, `name`, `events`, `disabledBlocks`, and `disableIntervals`. |
-| **`numberOfColumns`** | `number` | `1` | Number of resource columns displayed side-by-side. |
-| **`startMinutes`** | `number` | `480` (8:00 AM) | The starting minute offset of the visible timeline. |
-| **`hourHeight`** | `number` | `60` | Height in pixels for one hour block (controls zoom level). |
-| **`overLappingLayoutMode`** | `'stack'` or `'side'` | `'stack'` | Determines how overlapping events are rendered (stacked vertically or side-by-side). |
-| **`theme`** | `Partial<CalendarTheme>` | `undefined` | Customize typography, spacing, and colors of the calendar. See [Theming](#🎨-theming). |
-| **`eventSlots`** | `Partial<EventSlotRenderers>` | — | Allows overriding built-in event slot components (e.g. Body, TopRight). Useful for custom visuals. |
-| **`eventStyleOverrides`** | `(event: Event) => ViewStyle` | — | Custom styling logic for event blocks (e.g., color coding). |
-| **`isEventSelected`** | `(event: Event) => boolean` | — | Determines if an event is currently selected. |
-| **`isEventDisabled`** | `(event: Event) => boolean` | — | Determines if an event is disabled (e.g., non-editable). |
-| **`onEventPress`** | `(event: Event) => void` | — | Called when a user taps on an event. |
-| **`onEventLongPress`** | `(event: Event) => void` | — | Called when an event is long-pressed. Useful for showing contextual actions. |
-| **`onBlockLongPress`** | `(blockInfo: {resourceId: ResourceId; from: number; to: number;}) => void` | — | Fired when an empty time block is long-pressed. |
-| **`onDisabledBlockPress`** | `(blockInfo: DisabledBlock) => void` | — | Fired when a user taps a disabled block (e.g., lunch hour). |
-| **`onResourcePress`** | `(resource: Resource) => void` | — | Called when a resource (column header) is pressed. |
-| **`onEventDragStart`** | `(event: Event) => void` | — | Triggered when a drag operation starts. |
-| **`onEventDragEnd`** | `(draft: DraggedEventDraft) => void` | — | Triggered when an event is dropped — provides updated position and resource. |
-| **`onEventResize`** | `(event: Event, newFrom: number, newTo: number) => void` | — | Called when an event’s duration is resized. |
-| **`isEventSelectable`** | `(event: Event) => boolean` | — | Determines if an event can be selected by the user. |
-| **`renderHeader`** | `() => ReactNode` | — | Optional custom header renderer (e.g., date switcher). |
+|---|---|---|---|
+| **`date`** | `Date` | **required** | The day to render. (Header + time grid are computed from this.) |
+| **`resources`** | `Array<Resource & { events: Event[]; disabledBlocks?: DisabledBlock[]; disableIntervals?: DisabledInterval[] }>` | **required** | Columns to render. Each resource can provide its own events and optional disabled ranges. |
+| **`timezone`** | `string` | device time zone (`Intl.DateTimeFormat().resolvedOptions().timeZone`) | Time zone used for time labels and taps-to-date conversion. |
+| **`startMinutes`** | `number` | `0` (00:00) | Start of the visible timeline in minutes from midnight (e.g. `8 * 60` = 08:00). |
+| **`numberOfColumns`** | `number` | `3` | How many resource columns to show side-by-side. |
+| **`hourHeight`** | `number` | `120` | Vertical scale: pixels used to render 1 hour. (Affects scrolling/snapping.) |
+| **`snapIntervalInMinutes`** | `number` | `5` | Drag/resize snapping granularity in minutes. |
+| **`overLappingLayoutMode`** | `LayoutMode` (`'stacked' \| 'side'`) | `'stacked'` | Strategy for laying out overlapping events within a column. |
+| **`theme`** | `CalendarTheme` | — | Theme overrides (typography, colors, etc.). Provided via `CalendarThemeProvider` internally. |
+| **`eventSlots`** | `EventSlots` | — | Slot renderers to customize event content. (Common keys: `Body`, `TopRight`.) Example: `{ Body: ({event}) => <MyBody event={event} /> }`. |
+| **`eventStyleOverrides`** | `StyleOverrides \| ((event: Event) => StyleOverrides \| undefined)` | — | Per-event styling override (e.g., background, border, radius). Function form lets you style by event. |
+| **`isEventSelected`** | `(event: Event) => boolean` | `() => false` | Tell the calendar which events are currently selected. |
+| **`isEventDisabled`** | `(event: Event) => boolean` | `() => false` | Mark events as disabled (non-interactive). |
+| **`onResourcePress`** | `(resource: Resource) => void` | — | Fired when a resource header is pressed. |
+| **`onBlockLongPress`** | `(resource: Resource, date: Date) => void` | — | Fired when the user long-presses an empty time block in a column. |
+| **`onDisabledBlockPress`** | `(block: DisabledBlock) => void` | — | Fired when a disabled block (e.g., lunch) is tapped. |
+| **`onEventPress`** | `(event: Event) => void` | — | Fired when an event is tapped. |
+| **`onEventLongPress`** | `(event: Event) => void` | — | Fired when an event is long-pressed. (The calendar also prepares internal drag state at this time.) |
 
 ---
 
 ### 🧩 Related Types
 
 ```ts
-type Resource = {
-  id: number | string;
-  name: string;
-  avatar?: string;
-  events?: Event[];
-  disabledBlocks?: DisabledBlock[];
-  disableIntervals?: DisabledInterval[];
-};
+type ResourceId = number;
 
 type Event = {
-  id: number | string;
-  title: string;
-  resourceId: number | string;
-  from: number; // in minutes
-  to: number;   // in minutes
-  description?: string;
-  meta?: Record<string, any>;
+    id: number;
+    resourceId: ResourceId;
+    from: number;
+    to: number;
+    title?: string;
+    description?: string;
+    meta?: {
+        [key: string]: any;
+    }
 };
 
 type DisabledBlock = {
-  id: number | string;
-  resourceId: number | string;
-  from: number;
-  to: number;
-  title?: string;
+    id: number;
+    resourceId: ResourceId;
+    from: number;
+    to: number;
+    title?: string;
 };
 
 type DisabledInterval = {
-  resourceId: number | string;
-  from: number;
-  to: number;
+    resourceId: ResourceId;
+    from: number;
+    to: number;
+};
+
+type Resource = {
+    id: ResourceId;
+    name: string;
+    avatar?: string;
 };
 
 type DraggedEventDraft = {
-  event: Event;
-  from: number;
-  to: number;
-  resourceId: number | string;
+    event: Event,
+    from: number,
+    to: number,
+    resourceId: ResourceId
+}
+
+type CalendarTheme = {
+    typography?: {
+        fontFamily?: string;
+    };
 };
 ```
