@@ -170,8 +170,6 @@ export default function TabOneScreen() {
     const [date, setDate] = React.useState(new Date());
     const [resources, setResources] = React.useState(resourceData)
 
-    console.log(draggedEventDraft)
-
     const updateResourcesOnDrag = React.useCallback(
         (draft: DraggedEventDraft) => {
             setResources((prev: any) => {
@@ -220,6 +218,11 @@ export default function TabOneScreen() {
     return (
         <View style={{flex: 1}}>
             <Calendar
+                theme={{
+                    typography: {
+                        fontFamily: 'NunitoSans',
+                    },
+                }}
                 resources={resources}
                 date={date}
                 startMinutes={8 * 60}
