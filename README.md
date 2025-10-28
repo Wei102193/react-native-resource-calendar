@@ -32,7 +32,9 @@ Follow these steps to get started quickly with **React Native Resource Calendar*
 ---
 
 ### 1️⃣ Wrap your app with CalendarBindingProvider
+
 ### 2️⃣ Feed the Calendar component with resources and events
+
 ### 3️⃣ Use hooks from useCalendarBinding to interact with the calendar state
 
 ```tsx
@@ -174,7 +176,7 @@ const resourceData = [
 ];
 
 export default function App() {
-   const {
+    const {
         useGetSelectedEvent,
         useSetSelectedEvent,
         useGetDraggedEventDraft
@@ -222,41 +224,41 @@ export default function App() {
         },
         [setResources]
     );
-    
-  return (
-    <CalendarBindingProvider>
-        <View style={{flex: 1}}>
-            <Calendar
-                resources={resources}
-                date={date}
-                startMinutes={8 * 60}
-                numberOfColumns={3}
-            />
-            {
-                selectedEvent && <View style={{
-                    flexDirection: 'row',
-                    justifyContent: 'space-between'
-                }}>
-                    <Button
-                        title="Cancel"
-                        onPress={() => {
-                            setSelectedEvent(null);
-                        }}
-                    />
-                    <Button
-                        title="Save"
-                        onPress={() => {
-                            if (draggedEventDraft) {
-                                updateResourcesOnDrag(draggedEventDraft!);
-                            }
-                            setSelectedEvent(null);
-                        }}
-                    />
-                </View>
-            }
-        </View>
-    </CalendarBindingProvider>
-  );
+
+    return (
+        <CalendarBindingProvider>
+            <View style={{flex: 1}}>
+                <Calendar
+                    resources={resources}
+                    date={date}
+                    startMinutes={8 * 60}
+                    numberOfColumns={3}
+                />
+                {
+                    selectedEvent && <View style={{
+                        flexDirection: 'row',
+                        justifyContent: 'space-between'
+                    }}>
+                        <Button
+                            title="Cancel"
+                            onPress={() => {
+                                setSelectedEvent(null);
+                            }}
+                        />
+                        <Button
+                            title="Save"
+                            onPress={() => {
+                                if (draggedEventDraft) {
+                                    updateResourcesOnDrag(draggedEventDraft!);
+                                }
+                                setSelectedEvent(null);
+                            }}
+                        />
+                    </View>
+                }
+            </View>
+        </CalendarBindingProvider>
+    );
 }
 ```
 
@@ -264,26 +266,26 @@ export default function App() {
 
 The `Calendar` component accepts a flexible set of props for customizing layout, theme, and interactivity.
 
-| Prop | Type | Default | Description |
-|---|---|---|---|
-| **`date`** | `Date` | **required** | The day to render. (Header + time grid are computed from this.) |
-| **`resources`** | `Array<Resource & { events: Event[]; disabledBlocks?: DisabledBlock[]; disableIntervals?: DisabledInterval[] }>` | **required** | Columns to render. Each resource can provide its own events and optional disabled ranges. |
-| **`timezone`** | `string` | device time zone (`Intl.DateTimeFormat().resolvedOptions().timeZone`) | Time zone used for time labels and taps-to-date conversion. |
-| **`startMinutes`** | `number` | `0` (00:00) | Start of the visible timeline in minutes from midnight (e.g. `8 * 60` = 08:00). |
-| **`numberOfColumns`** | `number` | `3` | How many resource columns to show side-by-side. |
-| **`hourHeight`** | `number` | `120` | Vertical scale: pixels used to render 1 hour. (Affects scrolling/snapping.) |
-| **`snapIntervalInMinutes`** | `number` | `5` | Drag/resize snapping granularity in minutes. |
-| **`overLappingLayoutMode`** | `LayoutMode` (`'stacked' \| 'side'`) | `'stacked'` | Strategy for laying out overlapping events within a column. |
-| **`theme`** | `CalendarTheme` | — | Theme overrides (typography, colors, etc.). Provided via `CalendarThemeProvider` internally. |
-| **`eventSlots`** | `EventSlots` | — | Slot renderers to customize event content. (Common keys: `Body`, `TopRight`.) Example: `{ Body: ({event}) => <MyBody event={event} /> }`. |
-| **`eventStyleOverrides`** | `StyleOverrides \| ((event: Event) => StyleOverrides \| undefined)` | — | Per-event styling override (e.g., background, border, radius). Function form lets you style by event. |
-| **`isEventSelected`** | `(event: Event) => boolean` | `() => false` | Tell the calendar which events are currently selected. |
-| **`isEventDisabled`** | `(event: Event) => boolean` | `() => false` | Mark events as disabled (non-interactive). |
-| **`onResourcePress`** | `(resource: Resource) => void` | — | Fired when a resource header is pressed. |
-| **`onBlockLongPress`** | `(resource: Resource, date: Date) => void` | — | Fired when the user long-presses an empty time block in a column. |
-| **`onDisabledBlockPress`** | `(block: DisabledBlock) => void` | — | Fired when a disabled block (e.g., lunch) is tapped. |
-| **`onEventPress`** | `(event: Event) => void` | — | Fired when an event is tapped. |
-| **`onEventLongPress`** | `(event: Event) => void` | — | Fired when an event is long-pressed. (The calendar also prepares internal drag state at this time.) |
+| Prop                        | Type                                                                                                             | Default          | Description                                                                                                                               |
+|-----------------------------|------------------------------------------------------------------------------------------------------------------|------------------|-------------------------------------------------------------------------------------------------------------------------------------------|
+| **`date`**                  | `Date`                                                                                                           | `new Date()`     | The current date displayed in the calendar.                                                                                               |
+| **`resources`**             | `Array<Resource & { events: Event[]; disabledBlocks?: DisabledBlock[]; disableIntervals?: DisabledInterval[] }>` | **required**     | Columns to render. Each resource can provide its own events and optional disabled ranges.                                                 |
+| **`timezone`**              | `string`                                                                                                         | device time zone | Time zone used for time labels and taps-to-date conversion.                                                                               |
+| **`startMinutes`**          | `number`                                                                                                         | `0` (00:00)      | Start of the visible timeline in minutes from midnight (e.g. `8 * 60` = 08:00).                                                           |
+| **`numberOfColumns`**       | `number`                                                                                                         | `3`              | How many resource columns to show side-by-side.                                                                                           |
+| **`hourHeight`**            | `number`                                                                                                         | `120`            | Vertical scale: pixels used to render 1 hour. (Affects scrolling/snapping.)                                                               |
+| **`snapIntervalInMinutes`** | `number`                                                                                                         | `5`              | Drag/resize snapping granularity in minutes.                                                                                              |
+| **`overLappingLayoutMode`** | `LayoutMode` (`'stacked' \| 'columns'`)                                                                          | `'stacked'`      | Strategy for laying out overlapping events within a column.                                                                               |
+| **`theme`**                 | `CalendarTheme`                                                                                                  | —                | Theme overrides (typography).                                                                                                             |
+| **`eventSlots`**            | `EventSlots`                                                                                                     | —                | Slot renderers to customize event content. (Common keys: `Body`, `TopRight`.) Example: `{ Body: ({event}) => <MyBody event={event} /> }`. |
+| **`eventStyleOverrides`**   | `StyleOverrides \| ((event: Event) => StyleOverrides \| undefined)`                                              | —                | Per-event styling override (e.g., background, border, radius). Function form lets you style by event.                                     |
+| **`isEventSelected`**       | `(event: Event) => boolean`                                                                                      | `() => false`    | Tell the calendar which events are currently selected.                                                                                    |
+| **`isEventDisabled`**       | `(event: Event) => boolean`                                                                                      | `() => false`    | Mark events as disabled (non-interactive).                                                                                                |
+| **`onResourcePress`**       | `(resource: Resource) => void`                                                                                   | —                | Fired when a resource header is pressed.                                                                                                  |
+| **`onBlockLongPress`**      | `(resource: Resource, date: Date) => void`                                                                       | —                | Fired when the user long-presses an empty time block in a column.                                                                         |
+| **`onDisabledBlockPress`**  | `(block: DisabledBlock) => void`                                                                                 | —                | Fired when a disabled block (e.g., lunch) is tapped.                                                                                      |
+| **`onEventPress`**          | `(event: Event) => void`                                                                                         | —                | Fired when an event is tapped.                                                                                                            |
+| **`onEventLongPress`**      | `(event: Event) => void`                                                                                         | —                | Fired when an event is long-pressed. (The calendar also prepares internal drag state at this time.)                                       |
 
 ---
 
