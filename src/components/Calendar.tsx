@@ -12,11 +12,11 @@ import Animated, {
 import {Dimensions, LayoutChangeEvent, Platform, StyleSheet, useWindowDimensions, View} from "react-native";
 import {FlashList} from "@shopify/flash-list";
 import * as Haptics from "expo-haptics";
-import {LayoutMode, positionToMinutes, scalePosition, TIME_LABEL_WIDTH} from '@/utilities/helpers';
+import {positionToMinutes, scalePosition, TIME_LABEL_WIDTH} from '@/utilities/helpers';
 import {TimeLabels} from './TimeLabels';
 import {ResourcesComponent} from "./ResourcesComponent";
 import {EventGridBlocksSkia} from "./EventGridBlocks";
-import {CalendarTheme, DisabledBlock, DisabledInterval, Event, Resource} from '@/types/calendarTypes';
+import {CalendarTheme, DisabledBlock, DisabledInterval, Event, LayoutMode, Resource} from '@/types/calendarTypes';
 import {StoreFeeder} from '@/store/StoreFeeder';
 import {useCalendarBinding} from '@/store/bindings/BindingProvider';
 import DisabledIntervals from './DisabledIntervals';

@@ -3,14 +3,10 @@ import {StyleSheet, Text, TextInput, TextStyle, TouchableOpacity, View, ViewStyl
 import Row from "../components/common/layout/Row";
 import Col from "../components/common/layout/Col";
 import Hidden from "../components/common/layout/Hidden";
-import {Event} from "@/types/calendarTypes";
+import {Event, EventRenderContext} from "@/types/calendarTypes";
 import {EventFrame, getTextSize, minutesToTime, scalePosition} from "@/utilities/helpers";
 import {useCalendarBinding} from "@/store/bindings/BindingProvider";
 import {useResolvedFont} from "@/theme/ThemeContext";
-
-export type EventRenderContext = {
-    hourHeight: number;
-};
 
 export type EventSlots = {
     // TopLeft?: React.ComponentType<{ event: Event; ctx: EventRenderContext }>;

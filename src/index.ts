@@ -7,5 +7,7 @@ export type {
     DisabledBlock,
     DisabledInterval,
     CalendarTheme,
-    DraggedEventDraft
+    DraggedEventDraft,
+    LayoutMode,
+    EventRenderContext
 } from "./types/calendarTypes";

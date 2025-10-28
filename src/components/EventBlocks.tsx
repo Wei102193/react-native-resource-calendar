@@ -1,8 +1,8 @@
 import React, {useMemo} from "react";
 import {useCalendarBinding} from "@/store/bindings/BindingProvider";
-import {Event} from "@/types/calendarTypes";
+import {Event, LayoutMode} from "@/types/calendarTypes";
 import {EventRenderer} from "./EventBlock";
-import {computeEventFrames, LayoutMode} from "@/utilities/helpers";
+import {computeEventFrames} from "@/utilities/helpers";
 
 type FlagFn = (event: Event) => boolean;
 

@@ -45,3 +45,9 @@ export type CalendarTheme = {
         fontFamily?: string;
     };
 };
+
+export type LayoutMode = "columns" | "stacked";
+
+export type EventRenderContext = {
+    hourHeight: number;
+};

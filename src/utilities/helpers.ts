@@ -1,7 +1,7 @@
 // Function to group events into clusters based on overlap
 import {toZonedTime} from "date-fns-tz";
 import {format, getHours, getMinutes, set, setHours, setMinutes, setSeconds} from "date-fns";
-import {DisabledBlock, Event} from "../types/calendarTypes";
+import {DisabledBlock, Event, LayoutMode} from "@/types/calendarTypes";
 
 export const TIME_LABEL_WIDTH = 50;
 const groupEventsByOverlap = (events: ReadonlyArray<Event>): Event[][] => {
@@ -374,7 +374,6 @@ export function columnsToPixels(
     return out;
 }
 
-export type LayoutMode = "columns" | "stacked";
 export type EventFrame = {
     leftPx: number;
     widthPx: number;
