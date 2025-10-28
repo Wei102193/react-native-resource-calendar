@@ -80,14 +80,16 @@ const DisabledBlockComponent: React.FC<DisabledBlockComponentProps> = ({
                     allowFontScaling={false}
                     style={{
                         fontFamily: titleFace,
-                        fontSize: getTextSize(hourHeight)
+                        fontSize: getTextSize(hourHeight),
+                        fontWeight: "600"
                     }}>{minutesToTime(disabledBlock?.from)} - {minutesToTime(disabledBlock?.to)}</Text>
             </Row>
             <Text
                 allowFontScaling={false}
                 style={{
                     fontFamily: titleFace,
-                    fontSize: getTextSize(hourHeight)
+                    fontSize: getTextSize(hourHeight),
+                    fontWeight: "600"
                 }}>{disabledBlock?.title}</Text>
         </Col>
     </TouchableOpacity>

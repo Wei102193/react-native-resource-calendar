@@ -27,7 +27,8 @@ const Badge: React.FC<PropsWithChildren<BadgeProps>> = ({
                 style={{
                     color: textColor,
                     fontSize,
-                    fontFamily: titleFace
+                    fontFamily: titleFace,
+                    fontWeight: '600',
                 }}
             >{value}</Text>}
         </View>

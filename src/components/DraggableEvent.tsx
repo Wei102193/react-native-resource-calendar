@@ -121,7 +121,8 @@ export const DraggableEvent = ({
                                     allowFontScaling={false}
                                     style={[{
                                         fontFamily: titleFace,
-                                        fontSize: getTextSize(hourHeight)
+                                        fontSize: getTextSize(hourHeight),
+                                        fontWeight: "700"
                                     }, resolved?.title]}
                                 >{selectedEvent?.title}</Text>
                             </Row>
@@ -129,7 +130,8 @@ export const DraggableEvent = ({
                                 allowFontScaling={false}
                                 style={[{
                                     fontFamily: timeFace,
-                                    fontSize: getTextSize(hourHeight)
+                                    fontSize: getTextSize(hourHeight),
+                                    fontWeight: "600"
                                 }, resolved?.desc]}>{selectedEvent?.description}</Text>
                         </>
                 }

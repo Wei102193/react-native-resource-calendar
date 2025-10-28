@@ -2,7 +2,13 @@
 import * as React from 'react';
 import {useEffect, useState} from 'react';
 import {InteractionManager, StyleSheet, Text, View} from "react-native";
-import {getCurrentTimeInMinutes, getTextSize, indexToDate, TIME_LABEL_WIDTH, timeToYPosition} from "../utilities/helpers";
+import {
+    getCurrentTimeInMinutes,
+    getTextSize,
+    indexToDate,
+    TIME_LABEL_WIDTH,
+    timeToYPosition
+} from "@/utilities/helpers";
 import {format, isSameDay} from "date-fns";
 import {toZonedTime} from "date-fns-tz";
 import Col from './common/layout/Col';
@@ -76,12 +82,22 @@ export const TimeLabels = React.forwardRef(({
                     <View key={index} style={[styles.timeLabel, {height: hourHeight}]}>
                         <Text
                             allowFontScaling={false}
-                            style={{textAlign: "center", fontFamily: titleFace, fontSize: getTextSize(hourHeight)}}>
+                            style={{
+                                textAlign: "center",
+                                fontFamily: titleFace,
+                                fontSize: getTextSize(hourHeight),
+                                fontWeight: '700'
+                            }}>
                             {indexToDate(index).split(" ")[0]}
                         </Text>
                         <Text
                             allowFontScaling={false}
-                            style={{textAlign: "center", fontFamily: titleFace, fontSize: getTextSize(hourHeight)}}>
+                            style={{
+                                textAlign: "center",
+                                fontFamily: titleFace,
+                                fontSize: getTextSize(hourHeight),
+                                fontWeight: '700'
+                            }}>
                             {indexToDate(index).split(" ")[1]}
                         </Text>
                     </View>
@@ -95,6 +111,7 @@ export const TimeLabels = React.forwardRef(({
                         style={{
                             textAlign: "center",
                             fontFamily: titleFace,
+                            fontWeight: '700',
                             fontSize: getTextSize(hourHeight),
                             color: "red"
                         }}

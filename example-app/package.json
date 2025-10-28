@@ -27,7 +27,7 @@
     "react-dom": "19.0.0",
     "react-native": "0.79.6",
     "react-native-reanimated": "~3.17.4",
-    "react-native-resource-calendar": "file:../react-native-resource-calendar-1.0.0.tgz",
+    "react-native-resource-calendar": "file:../react-native-resource-calendar-1.0.2.tgz",
     "react-native-safe-area-context": "5.4.0",
     "react-native-screens": "~4.11.1",
     "react-native-web": "~0.20.0"

@@ -49,6 +49,7 @@ const ResourceComponent = ({id, onResourcePress, APPOINTMENT_BLOCK_WIDTH}: Resou
         <Text style={{
             fontSize: 14,
             fontFamily: titleFace,
+            fontWeight: '700',
         }}
               numberOfLines={1}
               allowFontScaling={false}

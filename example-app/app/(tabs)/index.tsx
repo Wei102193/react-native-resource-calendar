@@ -239,7 +239,6 @@ export default function TabOneScreen() {
                     <Button
                         title="Save"
                         onPress={() => {
-                            console.log(draggedEventDraft);
                             if (draggedEventDraft) {
                                 updateResourcesOnDrag(draggedEventDraft!);
                             }
