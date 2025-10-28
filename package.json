@@ -1,6 +1,6 @@
 {
   "name": "react-native-resource-calendar",
-  "version": "1.0.3",
+  "version": "1.0.2",
   "description": "A flexible, performant, and themeable React Native calendar for scheduling apps",
   "main": "dist/index.js",
   "module": "dist/index.js",
