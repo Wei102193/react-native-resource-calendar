@@ -17,7 +17,7 @@ Expo compatibility.
 
 ---
 
-[🎬 Watch the demo (.mov)](docs/demo.mov)
+[🎬 Watch the demo (.mp4)](docs/demo.mp4)
 
 ---
 
