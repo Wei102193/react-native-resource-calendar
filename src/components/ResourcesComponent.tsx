@@ -143,7 +143,7 @@ function StaffAvatar({
                         overflow: 'hidden'
                     }}>
                         {
-                            image ?
+                            !image ?
                                 <Image
                                     resizeMode={"cover"}
                                     source={{uri: image}}
@@ -160,9 +160,10 @@ function StaffAvatar({
                                         fontFamily: titleFace,
                                         fontSize: fontSize,
                                         color: textColor || "#4d959c",
+                                        lineHeight: circleSize,
                                     }}
                                 >
-                                    {name ? name.split(' ').map(n => n[0]).join('') : ''}
+                                    {name ? name.split(' ').map(n => n[0]).join('').slice(0, 2) : ''}
                                 </Text>
                         }
                     </Center>
