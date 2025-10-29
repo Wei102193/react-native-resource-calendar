@@ -18,7 +18,7 @@ Expo compatibility.
 ---
 
 [🎬 Watch the demo]
-[demo.mp4](docs/demo.mp4)
+https://github.com/user-attachments/assets/33b1fd2d-6067-4200-9c40-e285a2fa5221
 
 ---
 
