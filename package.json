@@ -46,17 +46,16 @@
   "homepage": "https://github.com/wei102193/react-native-resource-calendar#readme",
   "devDependencies": {
     "@types/lodash": "^4.17.20",
-    "@types/react": "^19.2.2",
+    "@types/react": "~19.0.10",
     "tsup": "^8.5.0",
-    "typescript": "^5.9.3"
+    "typescript": "~5.8.3"
   },
   "peerDependencies": {
     "@shopify/flash-list": "~1.7.6",
     "@shopify/react-native-skia": "~2.0.2",
     "expo-haptics": "~14.1.4",
     "react": "^19.0.0",
-    "react-content-loader": "~7.0.2",
-    "react-native": "^0.79.5",
+    "react-native": "^0.79.6",
     "react-native-gesture-handler": "~2.24.0",
     "react-native-reanimated": "~3.17.4",
     "react-native-svg": "~15.11.2"
@@ -65,7 +64,8 @@
     "date-fns": "^4.1.0",
     "date-fns-tz": "^3.2.0",
     "lodash": "^4.17.21",
-    "zustand": "^5.0.8"
+    "zustand": "^5.0.8",
+    "react-content-loader": "~7.0.2"
   },
   "publishConfig": {
     "access": "public"
