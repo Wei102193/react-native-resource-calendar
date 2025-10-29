@@ -57,11 +57,11 @@ react-native-svg \
 expo-haptics
 ```
 
+---
+
 ## 🚀 Quick Start
 
 Follow these steps to get started quickly with **React Native Resource Calendar**.
-
----
 
 ### 1️⃣ Wrap your app with CalendarBindingProvider
 
@@ -293,6 +293,8 @@ export default function App() {
     );
 }
 ```
+
+---
 
 ## ⚙️ Calendar Props
 
