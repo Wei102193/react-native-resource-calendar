@@ -17,7 +17,8 @@ Expo compatibility.
 
 ---
 
-https://github.com/user-attachments/assets/c827d6ac-5981-4f27-9c26-50c29b6a5e88
+## 🎬 Demo
+https://github.com/user-attachments/assets/48841509-c801-4d77-948b-f108ff57ad34
 
 ---
 
