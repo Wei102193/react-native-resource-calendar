@@ -209,12 +209,14 @@ const CalendarInner: React.FC<CalendarProps> = (props) => {
         .enabled(layout !== null)
         .shouldCancelWhenOutside(false)
         .onTouchesMove((_evt, stateManager) => {
+            'worklet';
             if (isIOS) return;
             if (selectedEvent)
                 stateManager.activate();
             else stateManager.end();
         })
         .onUpdate((evt) => {
+            'worklet';
             // Check if the event is draggable, only draggable if gesture is within the selected event block
             if (!evt || evt.y == null || evt.x == null) return;
             let draggable = false;
@@ -330,6 +332,7 @@ const CalendarInner: React.FC<CalendarProps> = (props) => {
             }
         })
         .onEnd(() => {
+            'worklet';
             // Stop any active auto-scrolling
             autoScrollSpeed.value = 0;
             autoScrollXSpeed.value = 0;

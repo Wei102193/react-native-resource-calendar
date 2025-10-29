@@ -74,9 +74,18 @@ export const EventGridBlocksSkia: React.FC<Props> = ({
     }, []);
 
     const longPressGesture = Gesture.LongPress()
-        .onBegin((e) => runOnJS(onPressBegin)(Math.floor(e.y / rowHeight)))
-        .onEnd((e) => runOnJS(onSlotPress)(Math.floor(e.y / rowHeight)))
-        .onFinalize(() => runOnJS(onTouchesUp)());
+        .onBegin((e) => {
+            'worklet';
+            runOnJS(onPressBegin)(Math.floor(e.y / rowHeight))
+        })
+        .onEnd((e) => {
+            'worklet';
+            runOnJS(onSlotPress)(Math.floor(e.y / rowHeight))
+        })
+        .onFinalize(() => {
+            'worklet';
+            runOnJS(onTouchesUp)()
+        });
 
     return (
         <GestureDetector gesture={longPressGesture}>
