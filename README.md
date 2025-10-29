@@ -25,6 +25,33 @@ npm install react-native-resource-calendar
 yarn add react-native-resource-calendar
 ```
 
+## ⚙️ Peer Dependencies
+
+This library relies on several React Native ecosystem packages that must be installed in your app.
+If you’re using Expo, run the following to ensure compatible versions:
+
+```bash
+npx expo install \
+react-native-gesture-handler \
+react-native-reanimated \
+react-native-svg \
+@shopify/flash-list \
+@shopify/react-native-skia \
+expo-haptics
+```
+
+If you’re using bare React Native (not Expo), install them manually:
+
+```bash
+npm install \
+react-native-gesture-handler \
+react-native-reanimated \
+react-native-svg \
+@shopify/flash-list \
+@shopify/react-native-skia \
+expo-haptics
+```
+
 ## 🚀 Quick Start
 
 Follow these steps to get started quickly with **React Native Resource Calendar**.
