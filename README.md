@@ -17,6 +17,10 @@ Expo compatibility.
 
 ---
 
+[🎬 Watch the demo (.mov)](docs/demo.mov)
+
+---
+
 ## 📦 Installation
 
 ```bash
