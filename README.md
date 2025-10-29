@@ -18,9 +18,7 @@ Expo compatibility.
 ---
 
 [🎬 Watch the demo]
-<video src="./docs/demo.mp4" width="100%" controls muted playsinline>
-Your browser does not support the video tag.
-</video>
+[demo.mp4](docs/demo.mp4)
 
 ---
 
