@@ -311,3 +311,9 @@ type CalendarTheme = {
     };
 };
 ```
+
+---
+
+## 💫 Support the Project
+
+If you find this project helpful or interesting, please consider giving it a **⭐️** on GitHub!
