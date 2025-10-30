@@ -1,11 +1,12 @@
 import React from 'react';
 import {StyleSheet, TouchableOpacity, View} from 'react-native';
-import {Calendar, DraggedEventDraft, useCalendarBinding, Event, LayoutMode} from "react-native-resource-calendar";
+import {Calendar, DraggedEventDraft, Event, LayoutMode, useCalendarBinding} from "react-native-resource-calendar";
 import {SafeAreaView} from "react-native-safe-area-context";
 import {ThemedText} from "@/components/ThemedText";
 import {resourceData} from "@/app/(tabs)/fakeData";
 import EventTopRight from "@/components/EventTopRight";
 import {FontAwesome} from "@expo/vector-icons";
+import {statusColor} from "@/utilities/helpers";
 
 export default function HomeScreen() {
     const {
@@ -71,23 +72,6 @@ export default function HomeScreen() {
         const bg = statusColor(event.meta?.status)
         return {container: {backgroundColor: bg}};
     };
-
-    const statusColor = (status: number) => {
-        switch (status) {
-            case 1:
-                return "#4d959c"; // Confirmed - Teal
-            case 2:
-                return "#83C6AE"; // Pending - Orange
-            case 3:
-                return "#FF8484"; // Cancelled - Red
-            case  4:
-                return "#95A1D8"; // Rescheduled - Purple
-            case 5:
-                return "#DAEEE7"; // Completed - Green
-            default:
-                return "#7f8c8d"; // Default - Gray
-        }
-    }
 
     const randomPropsGenerator = () => {
         const randomHourHeight = Math.floor(Math.random() * (120 - 60 + 1)) + 60;
