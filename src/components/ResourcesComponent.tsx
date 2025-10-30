@@ -119,7 +119,7 @@ function StaffAvatar({
                         top: -6,
                         borderRadius: 999,
                         backgroundColor: "#fff",
-                        padding: 4
+                        padding: 2
                     }, badgeStyle]}
                     >
                         <Badge
