@@ -5,6 +5,7 @@ import {SafeAreaView} from "react-native-safe-area-context";
 import {ThemedText} from "@/components/ThemedText";
 import {resourceData} from "@/app/(tabs)/fakeData";
 import EventTopRight from "@/components/EventTopRight";
+import {FontAwesome} from "@expo/vector-icons";
 
 export default function HomeScreen() {
     const {
@@ -16,7 +17,9 @@ export default function HomeScreen() {
     const setSelectedEvent = useSetSelectedEvent();
     const draggedEventDraft = useGetDraggedEventDraft();
     const [date, setDate] = React.useState(new Date());
-    const [resources, setResources] = React.useState(resourceData)
+    const [resources, setResources] = React.useState(resourceData);
+    const [hourHeight, setHourHeight] = React.useState(60);
+    const [numberOfColumns, setNumberOfColumns] = React.useState(3);
 
     const updateResourcesOnDrag = React.useCallback(
         (draft: DraggedEventDraft) => {
@@ -85,6 +88,13 @@ export default function HomeScreen() {
         }
     }
 
+    const randomPropsGenerator = () => {
+        const randomHourHeight = Math.floor(Math.random() * (120 - 60 + 1)) + 60;
+        const randomNumberOfColumns = Math.floor(Math.random() * (5 - 1 + 1)) + 1;
+        setHourHeight(randomHourHeight);
+        setNumberOfColumns(randomNumberOfColumns);
+    }
+
     return (
         <SafeAreaView style={{backgroundColor: "#fff", flex: 1}} edges={["top"]}>
             <Calendar
@@ -96,7 +106,8 @@ export default function HomeScreen() {
                 resources={resources}
                 date={date}
                 startMinutes={8 * 60}
-                numberOfColumns={3}
+                numberOfColumns={numberOfColumns}
+                hourHeight={hourHeight}
                 eventSlots={{
                     // Body: ({event, ctx}) => <EventBody event={event} ctx={ctx}/>,
                     TopRight: ({event, ctx}) => <EventTopRight event={event} ctx={ctx}/>,
@@ -136,21 +147,34 @@ export default function HomeScreen() {
                     </TouchableOpacity>
                 </View>
             }
-            <TouchableOpacity
-                style={styles.floatingButton}
-                onPress={() => {
-                    setDate(new Date());
-                }}
-            >
-                <View
-                    style={{
-                        width: 16,
-                        height: 16,
-                        backgroundColor: "#4d959c",
-                        borderRadius: 99
+            <View style={{
+                right: 20,
+                bottom: 40,
+                position: "absolute",
+                gap: 12
+            }}>
+                <TouchableOpacity
+                    style={styles.floatingButton}
+                    onPress={() => {
+                        setDate(new Date());
                     }}
-                />
-            </TouchableOpacity>
+                >
+                    <View
+                        style={{
+                            width: 16,
+                            height: 16,
+                            backgroundColor: "#4d959c",
+                            borderRadius: 99
+                        }}
+                    />
+                </TouchableOpacity>
+                <TouchableOpacity
+                    style={styles.floatingButton}
+                    onPress={randomPropsGenerator}
+                >
+                    <FontAwesome name="random" size={16} color="#4d959c"/>
+                </TouchableOpacity>
+            </View>
         </SafeAreaView>
     );
 }
@@ -199,9 +223,6 @@ const styles = StyleSheet.create({
         width: 40,
         height: 40,
         backgroundColor: "#fff",
-        position: "absolute",
-        bottom: 40,
-        right: 20,
         zIndex: 9999,
         borderRadius: 5,
         justifyContent: "center",
