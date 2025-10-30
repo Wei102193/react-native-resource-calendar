@@ -71,9 +71,13 @@ Follow these steps to get started quickly with **React Native Resource Calendar*
 
 ```tsx
 import React from 'react';
-import {Button, View} from 'react-native';
-import {Calendar, DraggedEventDraft, useCalendarBinding} from "react-native-resource-calendar";
+import {StyleSheet, TouchableOpacity, View} from 'react-native';
+import {Calendar, DraggedEventDraft, Event, LayoutMode, useCalendarBinding} from "react-native-resource-calendar";
+import {SafeAreaView} from "react-native-safe-area-context";
+import {ThemedText} from "@/components/ThemedText";
 import {resourceData} from "@/app/(tabs)/fakeData";
+import EventTopRight from "@/components/EventTopRight";
+import {FontAwesome} from "@expo/vector-icons";
 import {statusColor} from "@/utilities/helpers";
 
 export default function App() {
