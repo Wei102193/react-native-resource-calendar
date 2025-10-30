@@ -143,7 +143,7 @@ function StaffAvatar({
                         overflow: 'hidden'
                     }}>
                         {
-                            !image ?
+                            image ?
                                 <Image
                                     resizeMode={"cover"}
                                     source={{uri: image}}
