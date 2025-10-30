@@ -1,9 +1,10 @@
 import React from 'react';
 import {StyleSheet, TouchableOpacity, View} from 'react-native';
-import {Calendar, DraggedEventDraft, useCalendarBinding} from "react-native-resource-calendar";
+import {Calendar, DraggedEventDraft, useCalendarBinding, Event} from "react-native-resource-calendar";
 import {SafeAreaView} from "react-native-safe-area-context";
 import {ThemedText} from "@/components/ThemedText";
 import {resourceData} from "@/app/(tabs)/fakeData";
+import EventTopRight from "@/components/EventTopRight";
 
 export default function HomeScreen() {
     const {
@@ -62,6 +63,28 @@ export default function HomeScreen() {
         [setResources]
     );
 
+    const eventStyleOverrides = (event: Event) => {
+        const bg = statusColor(event.meta?.status)
+        return {container: {backgroundColor: bg}};
+    };
+
+    const statusColor = (status: number) => {
+        switch (status) {
+            case 1:
+                return "#4d959c"; // Confirmed - Teal
+            case 2:
+                return "#83C6AE"; // Pending - Orange
+            case 3:
+                return "#FF8484"; // Cancelled - Red
+            case  4:
+                return "#95A1D8"; // Rescheduled - Purple
+            case 5:
+                return "#DAEEE7"; // Completed - Green
+            default:
+                return "#7f8c8d"; // Default - Gray
+        }
+    }
+
     return (
         <SafeAreaView style={{backgroundColor: "#fff", flex: 1}} edges={["top"]}>
             <Calendar
@@ -74,6 +97,11 @@ export default function HomeScreen() {
                 date={date}
                 startMinutes={8 * 60}
                 numberOfColumns={3}
+                eventSlots={{
+                    // Body: ({event, ctx}) => <EventBody event={event} ctx={ctx}/>,
+                    TopRight: ({event, ctx}) => <EventTopRight event={event} ctx={ctx}/>,
+                }}
+                eventStyleOverrides={eventStyleOverrides}
             />
             {
                 selectedEvent && <View style={styles.bar}>

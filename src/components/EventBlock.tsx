@@ -143,7 +143,7 @@ const EventBlock: React.FC<EventBlockProps> = React.memo(({
                 <Row style={{
                     position: "absolute",
                     right: 2
-                }} space={2}>
+                }}>
                     {TopRight ? <TopRight event={event} ctx={{hourHeight}}/> : null}
                 </Row>
             </Col>
