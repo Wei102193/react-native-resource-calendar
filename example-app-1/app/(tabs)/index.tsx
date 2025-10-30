@@ -1,6 +1,6 @@
 import React from 'react';
 import {StyleSheet, TouchableOpacity, View} from 'react-native';
-import {Calendar, DraggedEventDraft, useCalendarBinding, Event} from "react-native-resource-calendar";
+import {Calendar, DraggedEventDraft, useCalendarBinding, Event, LayoutMode} from "react-native-resource-calendar";
 import {SafeAreaView} from "react-native-safe-area-context";
 import {ThemedText} from "@/components/ThemedText";
 import {resourceData} from "@/app/(tabs)/fakeData";
@@ -18,8 +18,9 @@ export default function HomeScreen() {
     const draggedEventDraft = useGetDraggedEventDraft();
     const [date, setDate] = React.useState(new Date());
     const [resources, setResources] = React.useState(resourceData);
-    const [hourHeight, setHourHeight] = React.useState(60);
+    const [hourHeight, setHourHeight] = React.useState(120);
     const [numberOfColumns, setNumberOfColumns] = React.useState(3);
+    const [layoutMode, setLayoutMode] = React.useState<LayoutMode>('stacked');
 
     const updateResourcesOnDrag = React.useCallback(
         (draft: DraggedEventDraft) => {
@@ -93,6 +94,7 @@ export default function HomeScreen() {
         const randomNumberOfColumns = Math.floor(Math.random() * (5 - 1 + 1)) + 1;
         setHourHeight(randomHourHeight);
         setNumberOfColumns(randomNumberOfColumns);
+        setLayoutMode(layoutMode === 'stacked' ? 'columns' : 'stacked');
     }
 
     return (
@@ -113,6 +115,7 @@ export default function HomeScreen() {
                     TopRight: ({event, ctx}) => <EventTopRight event={event} ctx={ctx}/>,
                 }}
                 eventStyleOverrides={eventStyleOverrides}
+                overLappingLayoutMode={layoutMode}
             />
             {
                 selectedEvent && <View style={styles.bar}>
