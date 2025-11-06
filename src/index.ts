@@ -9,5 +9,6 @@ export type {
     CalendarTheme,
     DraggedEventDraft,
     LayoutMode,
-    EventRenderContext
+    EventRenderContext,
+    CalendarMode
 } from "./types/calendarTypes";
