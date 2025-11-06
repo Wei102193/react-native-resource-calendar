@@ -408,3 +408,13 @@ export function computeEventFrames(
         });
     }
 }
+
+export const findResourceIndexFor = (rid: number, resourceIds: number[]) =>
+    Math.max(0, Math.min(resourceIds.length - 1,
+        resourceIds.findIndex(id => id === rid)
+    ));
+
+export const findDayIndexFor = (date: string, days: Date[]) =>
+    Math.max(0, Math.min(days.length - 1,
+        days.findIndex(d => date === format(d, "yyyy-MM-dd"))
+    ));

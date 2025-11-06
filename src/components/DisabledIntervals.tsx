@@ -9,6 +9,7 @@ interface DisabledIntervalsProp {
     id: number;
     APPOINTMENT_BLOCK_WIDTH: number;
     hourHeight: number;
+    date?: Date;
 }
 
 interface DisabledIntervalsProps {
@@ -30,10 +31,16 @@ const DisabledInterval: React.FC<DisabledIntervalsProps> = ({width, top, height}
     </View>
 };
 
-const DisabledIntervals: React.FC<DisabledIntervalsProp> = React.memo(({id, APPOINTMENT_BLOCK_WIDTH, hourHeight}) => {
-    const {useDisabledIntervalsFor} =
+const DisabledIntervals: React.FC<DisabledIntervalsProp> = React.memo(({
+                                                                           id,
+                                                                           APPOINTMENT_BLOCK_WIDTH,
+                                                                           hourHeight,
+                                                                           date: dateProp
+                                                                       }) => {
+    const {useDisabledIntervalsFor, useGetDate} =
         useCalendarBinding();
-    const disabledIntervals = useDisabledIntervalsFor(id);
+    const date = useGetDate();
+    const disabledIntervals = useDisabledIntervalsFor(id, dateProp ?? date);
 
     return (
         <>

@@ -3,6 +3,7 @@ export type ResourceId = number;
 export type Event = {
     id: number;
     resourceId: ResourceId;
+    date: string; // 'YYYY-MM-DD'
     from: number;
     to: number;
     title?: string;
@@ -15,6 +16,7 @@ export type Event = {
 export type DisabledBlock = {
     id: number;
     resourceId: ResourceId;
+    date: string; // 'YYYY-MM-DD'
     from: number;
     to: number;
     title?: string;
@@ -22,6 +24,7 @@ export type DisabledBlock = {
 
 export type DisabledInterval = {
     resourceId: ResourceId;
+    date: string; // 'YYYY-MM-DD'
     from: number;
     to: number;
 };
@@ -33,10 +36,11 @@ export type Resource = {
 };
 
 export type DraggedEventDraft = {
-    event: Event,
-    from: number,
-    to: number,
-    resourceId: ResourceId
+    event: Event;
+    from: number;
+    date: string; // 'YYYY-MM-DD'
+    to: number;
+    resourceId: ResourceId;
 }
 
 export type CalendarTheme = {
@@ -51,3 +55,5 @@ export type LayoutMode = "columns" | "stacked";
 export type EventRenderContext = {
     hourHeight: number;
 };
+
+export type CalendarMode = 'day' | '3days' | 'week';

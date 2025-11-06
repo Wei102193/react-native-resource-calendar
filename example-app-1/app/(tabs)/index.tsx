@@ -3,10 +3,10 @@ import {StyleSheet, TouchableOpacity, View} from 'react-native';
 import {Calendar, DraggedEventDraft, Event, LayoutMode, useCalendarBinding} from "react-native-resource-calendar";
 import {SafeAreaView} from "react-native-safe-area-context";
 import {ThemedText} from "@/components/ThemedText";
-import {resourceData} from "@/app/(tabs)/fakeData";
 import EventTopRight from "@/components/EventTopRight";
 import {FontAwesome} from "@expo/vector-icons";
 import {statusColor} from "@/utilities/helpers";
+import {resourceData} from "@/assets/fakeData";
 
 export default function HomeScreen() {
     const {
@@ -26,7 +26,7 @@ export default function HomeScreen() {
     const updateResourcesOnDrag = React.useCallback(
         (draft: DraggedEventDraft) => {
             setResources((prev: any) => {
-                const {event, from, to, resourceId} = draft;
+                const {event, from, to, resourceId, date} = draft;
 
                 return prev.map((res: any) => {
                     // ✅ if this is the new target resource
@@ -40,6 +40,7 @@ export default function HomeScreen() {
                             from,
                             to,
                             resourceId,
+                            date
                         };
 
                         return {
@@ -81,9 +82,16 @@ export default function HomeScreen() {
         setLayoutMode(layoutMode === 'stacked' ? 'columns' : 'stacked');
     }
 
+    const addDays = (days: number) => {
+        const newDate = new Date(date);
+        newDate.setDate(newDate.getDate() + days);
+        setDate(newDate);
+    };
+
     return (
         <SafeAreaView style={{backgroundColor: "#fff", flex: 1}} edges={["top"]}>
             <Calendar
+                // mode={'week'}
                 theme={{
                     typography: {
                         fontFamily: 'NunitoSans',
@@ -100,6 +108,9 @@ export default function HomeScreen() {
                 }}
                 eventStyleOverrides={eventStyleOverrides}
                 overLappingLayoutMode={layoutMode}
+                onBlockLongPress={(resource, date) => {
+                    console.log(resource, date)
+                }}
             />
             {
                 selectedEvent && <View style={styles.bar}>
@@ -143,7 +154,7 @@ export default function HomeScreen() {
                 <TouchableOpacity
                     style={styles.floatingButton}
                     onPress={() => {
-                        setDate(new Date());
+                        addDays(1);
                     }}
                 >
                     <View

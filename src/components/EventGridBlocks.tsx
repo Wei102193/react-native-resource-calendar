@@ -4,17 +4,14 @@ import {View} from 'react-native';
 import {Canvas, Line, Rect} from '@shopify/react-native-skia';
 import {Gesture, GestureDetector} from 'react-native-gesture-handler';
 import {runOnJS} from 'react-native-reanimated';
-import {combineDateAndTime} from '@/utilities/helpers';
 
 type Props = {
-    dateRef: React.RefObject<Date>;
-    handleBlockPress: (date: string) => void;
+    handleBlockPress: (time: string) => void;
     APPOINTMENT_BLOCK_WIDTH: number;
     hourHeight: number;
 };
 
 export const EventGridBlocksSkia: React.FC<Props> = ({
-                                                         dateRef,
                                                          handleBlockPress,
                                                          hourHeight,
                                                          APPOINTMENT_BLOCK_WIDTH
@@ -59,11 +56,10 @@ export const EventGridBlocksSkia: React.FC<Props> = ({
             setPressedRow(null);
             const slot = timeLabels[row];
             if (slot) {
-                const timestamp = combineDateAndTime(dateRef.current, slot);
-                handleBlockPress(timestamp);
+                handleBlockPress(slot);
             }
         },
-        [dateRef, handleBlockPress, timeLabels]
+        [handleBlockPress, timeLabels]
     );
 
     const onPressBegin = React.useCallback((row: number) => {

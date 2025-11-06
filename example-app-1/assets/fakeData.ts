@@ -7,20 +7,22 @@ export const resourceData = [
             {
                 id: 101,
                 resourceId: 1,
-                from: 8 * 60,   // 8:00 AM
-                to: 9 * 60,     // 9:00 AM
+                from: 8 * 60,
+                to: 9 * 60,
                 title: "Physical Therapy",
                 description: "Post-surgery recovery session",
                 meta: { status: 5, preferred: true, note: "High-priority recovery client with weekly check-ins." },
+                date: "2025-11-04",
             },
             {
                 id: 103,
                 resourceId: 1,
-                from: 8 * 60 + 45, // 8:45 AM
-                to: 9 * 60 + 30,   // 9:30 AM
+                from: 8 * 60 + 45,
+                to: 9 * 60 + 30,
                 title: "PT Follow-up",
                 description: "Overlap to test conflict handling",
                 meta: { status: 2, preferred: false, note: "Double-booked slot for conflict testing." },
+                date: "2025-11-05",
             },
             {
                 id: 102,
@@ -30,22 +32,24 @@ export const resourceData = [
                 title: "Mobility Assessment",
                 description: "Initial consultation",
                 meta: { status: 3, preferred: false },
+                date: "2025-11-06",
             },
             {
                 id: 104,
                 resourceId: 1,
-                from: 10 * 60 + 30, // 10:30 AM
-                to: 11 * 60 + 30,   // 11:30 AM
+                from: 10 * 60 + 30,
+                to: 11 * 60 + 30,
                 title: "Gait Analysis",
                 description: "Overlapping with assessment",
                 meta: { status: 4, preferred: true, note: "Intended overlap for triage." },
+                date: "2025-11-07",
             },
         ],
         disabledBlocks: [
-            { id: 1001, resourceId: 1, from: 12 * 60, to: 13 * 60, title: "Lunch Break" },
+            { id: 1001, resourceId: 1, from: 12 * 60, to: 13 * 60, title: "Lunch Break", date: "2025-11-08" },
         ],
         disableIntervals: [
-            { resourceId: 1, from: 17 * 60, to: 24 * 60 },
+            { resourceId: 1, from: 17 * 60, to: 24 * 60, date: "2025-11-09" },
         ],
     },
     {
@@ -60,6 +64,7 @@ export const resourceData = [
                 to: 10 * 60 + 30,
                 title: "Personal Training",
                 meta: { status: 4, preferred: true, note: "Client focusing on weight loss — adjust cardio intensity." },
+                date: "2025-11-10",
             },
             {
                 id: 202,
@@ -68,21 +73,23 @@ export const resourceData = [
                 to: 16 * 60,
                 title: "Endurance Coaching",
                 meta: { status: 2, preferred: false },
+                date: "2025-11-04",
             },
             {
                 id: 203,
                 resourceId: 2,
-                from: 15 * 60 + 15, // 3:15 PM
-                to: 16 * 60 + 15,   // 4:15 PM
+                from: 15 * 60 + 15,
+                to: 16 * 60 + 15,
                 title: "VO₂ Max Test",
                 meta: { status: 5, preferred: true, note: "Intentional overlap with coaching." },
+                date: "2025-11-05",
             },
         ],
         disabledBlocks: [
-            { id: 2001, resourceId: 2, from: 13 * 60, to: 14 * 60, title: "Staff Meeting" },
+            { id: 2001, resourceId: 2, from: 13 * 60, to: 14 * 60, title: "Staff Meeting", date: "2025-11-06" },
         ],
         disableIntervals: [
-            { resourceId: 2, from: 7 * 60, to: 8 * 60 },
+            { resourceId: 2, from: 7 * 60, to: 8 * 60, date: "2025-11-07" },
         ],
     },
     {
@@ -97,14 +104,16 @@ export const resourceData = [
                 to: 12 * 60,
                 title: "Sports Massage",
                 meta: { status: 1, preferred: true, note: "Repeat client — shoulder strain recovery." },
+                date: "2025-11-08",
             },
             {
                 id: 303,
                 resourceId: 3,
-                from: 11 * 60 + 30, // 11:30 AM
-                to: 12 * 60 + 30,   // 12:30 PM
+                from: 11 * 60 + 30,
+                to: 12 * 60 + 30,
                 title: "Trigger Point Therapy",
                 meta: { status: 3, preferred: false, note: "Overlaps lunch slightly." },
+                date: "2025-11-09",
             },
             {
                 id: 302,
@@ -113,11 +122,13 @@ export const resourceData = [
                 to: 15 * 60,
                 title: "Deep Tissue Massage",
                 meta: { status: 5, preferred: false, note: "Requested deeper pressure than usual." },
+                date: "2025-11-10",
             },
         ],
         disabledBlocks: [
-            { id: 3001, resourceId: 3, from: 12 * 60, to: 13 * 60, title: "Lunch" },
+            { id: 3001, resourceId: 3, from: 12 * 60, to: 13 * 60, title: "Lunch", date: "2025-11-04" },
         ],
+        disableIntervals: [],
     },
     {
         id: 4,
@@ -132,19 +143,22 @@ export const resourceData = [
                 title: "Nutrition Plan Review",
                 description: "Discuss dietary adjustments",
                 meta: { status: 4, preferred: true, note: "Client transitioning to a new macro plan." },
+                date: "2025-11-05",
             },
             {
                 id: 402,
                 resourceId: 4,
-                from: 13 * 60 + 30, // 1:30 PM
-                to: 14 * 60 + 30,   // 2:30 PM
+                from: 13 * 60 + 30,
+                to: 14 * 60 + 30,
                 title: "Supplement Consultation",
                 description: "Overlap to test scheduler",
                 meta: { status: 2, preferred: false, note: "Partial overlap intended." },
+                date: "2025-11-06",
             },
         ],
+        disabledBlocks: [],
         disableIntervals: [
-            { resourceId: 4, from: 18 * 60, to: 24 * 60 },
+            { resourceId: 4, from: 18 * 60, to: 24 * 60, date: "2025-11-07" },
         ],
     },
     {
@@ -160,23 +174,24 @@ export const resourceData = [
                 title: "Evening Yoga",
                 description: "Beginner-level class",
                 meta: { status: 2, preferred: true, note: "Full class expected; ensure space availability." },
+                date: "2025-11-08",
             },
             {
                 id: 502,
                 resourceId: 5,
-                from: 17 * 60 + 15, // 5:15 PM
-                to: 17 * 60 + 45,   // 5:45 PM
+                from: 17 * 60 + 15,
+                to: 17 * 60 + 45,
                 title: "One-on-One Yoga Intro",
                 description: "Intentional overlap with group class",
                 meta: { status: 3, preferred: false, note: "Short overlapping session." },
+                date: "2025-11-09",
             },
         ],
         disabledBlocks: [
-            { id: 5001, resourceId: 5, from: 12 * 60 + 30, to: 13 * 60 + 30, title: "Lunch Break" },
+            { id: 5001, resourceId: 5, from: 12 * 60 + 30, to: 13 * 60 + 30, title: "Lunch Break", date: "2025-11-10" },
         ],
+        disableIntervals: [],
     },
-
-    // --- New Resource 6 with overlapping events ---
     {
         id: 6,
         name: "Fatima Noor",
@@ -185,39 +200,40 @@ export const resourceData = [
             {
                 id: 601,
                 resourceId: 6,
-                from: 9 * 60,   // 9:00 AM
-                to: 10 * 60,    // 10:00 AM
+                from: 9 * 60,
+                to: 10 * 60,
                 title: "Pilates Session",
                 description: "Core stability focus",
                 meta: { status: 3, preferred: true, note: "Client recovering from lower back pain." },
+                date: "2025-11-04",
             },
             {
                 id: 602,
                 resourceId: 6,
-                from: 9 * 60 + 30, // 9:30 AM
-                to: 10 * 60 + 30,  // 10:30 AM
+                from: 9 * 60 + 30,
+                to: 10 * 60 + 30,
                 title: "Reformer Intro",
                 description: "Overlap to simulate double-booking",
                 meta: { status: 5, preferred: false, note: "New client; may reschedule." },
+                date: "2025-11-05",
             },
             {
                 id: 603,
                 resourceId: 6,
-                from: 16 * 60, // 4:00 PM
-                to: 17 * 60 + 30, // 5:30 PM
+                from: 16 * 60,
+                to: 17 * 60 + 30,
                 title: "Injury Prevention Workshop",
                 meta: { status: 4, preferred: true, note: "Team session; room booking required." },
+                date: "2025-11-06",
             },
         ],
         disabledBlocks: [
-            { id: 6001, resourceId: 6, from: 12 * 60, to: 12 * 60 + 30, title: "Break" },
+            { id: 6001, resourceId: 6, from: 12 * 60, to: 12 * 60 + 30, title: "Break", date: "2025-11-07" },
         ],
         disableIntervals: [
-            { resourceId: 6, from: 19 * 60, to: 24 * 60 },
+            { resourceId: 6, from: 19 * 60, to: 24 * 60, date: "2025-11-08" },
         ],
     },
-
-    // --- New Resource 7 with multiple overlaps ---
     {
         id: 7,
         name: "George Patel",
@@ -226,33 +242,36 @@ export const resourceData = [
             {
                 id: 701,
                 resourceId: 7,
-                from: 10 * 60,   // 10:00 AM
-                to: 11 * 60,     // 11:00 AM
+                from: 10 * 60,
+                to: 11 * 60,
                 title: "Strength Screening",
                 meta: { status: 2, preferred: true, note: "Baseline measurements." },
+                date: "2025-11-09",
             },
             {
                 id: 702,
                 resourceId: 7,
-                from: 10 * 60 + 45, // 10:45 AM
-                to: 12 * 60,        // 12:00 PM
+                from: 10 * 60 + 45,
+                to: 12 * 60,
                 title: "Kettlebell Clinic",
                 meta: { status: 5, preferred: false, note: "Overlaps screening; conflict edge case." },
+                date: "2025-11-10",
             },
             {
                 id: 703,
                 resourceId: 7,
-                from: 11 * 60 + 30, // 11:30 AM
-                to: 12 * 60 + 30,   // 12:30 PM
+                from: 11 * 60 + 30,
+                to: 12 * 60 + 30,
                 title: "Functional Movement Test",
                 meta: { status: 1, preferred: false, note: "Second overlap creating a chain." },
+                date: "2025-11-04",
             },
         ],
         disabledBlocks: [
-            { id: 7001, resourceId: 7, from: 13 * 60, to: 13 * 60 + 30, title: "Admin Time" },
+            { id: 7001, resourceId: 7, from: 13 * 60, to: 13 * 60 + 30, title: "Admin Time", date: "2025-11-05" },
         ],
         disableIntervals: [
-            { resourceId: 7, from: 18 * 60, to: 24 * 60 },
+            { resourceId: 7, from: 18 * 60, to: 24 * 60, date: "2025-11-06" },
         ],
     },
 ];

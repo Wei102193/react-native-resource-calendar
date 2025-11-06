@@ -20,6 +20,7 @@ interface DisabledBlocksProps {
     hourHeight: number;
     APPOINTMENT_BLOCK_WIDTH: number;
     onDisabledBlockPress?: (block: DisabledBlock) => void;
+    date?: Date;
 }
 
 interface DisabledBlockComponentProps {
@@ -99,11 +100,13 @@ const DisabledBlocks: React.FC<DisabledBlocksProps> = React.memo(({
                                                                       id,
                                                                       APPOINTMENT_BLOCK_WIDTH,
                                                                       hourHeight,
-                                                                      onDisabledBlockPress
+                                                                      onDisabledBlockPress,
+                                                                      date: dateProp
                                                                   }) => {
-    const {useDisabledBlocksFor} =
+    const {useDisabledBlocksFor, useGetDate} =
         useCalendarBinding();
-    const disabledBlocks = useDisabledBlocksFor(id);
+    const date = useGetDate();
+    const disabledBlocks = useDisabledBlocksFor(id, dateProp ?? date);
 
     const layoutMap = useMemo(() => {
         return columnsToPixels(computeDisabledBlockColumns(disabledBlocks), APPOINTMENT_BLOCK_WIDTH);

@@ -8,6 +8,8 @@ import type {
     ResourceId,
 } from '@/types/calendarTypes';
 
+export type DayKey = string; // (yyyy-MM-dd)
+
 export type SetDayDataPayload = {
     events?: Record<ResourceId, Event[]>;
     disabledBlocks?: Record<ResourceId, DisabledBlock[]>;
@@ -20,16 +22,19 @@ export type CalendarStoreBinding = {
 
     // Selectors (single-day, per-resource)
     useResourceById: (id: ResourceId) => Resource;
-    useEventsFor: (resourceId: ResourceId) => ReadonlyArray<Event>;
-    useDisabledBlocksFor: (resourceId: ResourceId) => ReadonlyArray<DisabledBlock>;
-    useDisabledIntervalsFor: (resourceId: ResourceId) => ReadonlyArray<DisabledInterval>;
+    useEventsFor: (resourceId: ResourceId, dayDate: Date) => ReadonlyArray<Event>;
+    useDisabledBlocksFor: (resourceId: ResourceId, dayDate: Date) => ReadonlyArray<DisabledBlock>;
+    useDisabledIntervalsFor: (resourceId: ResourceId, dayDate: Date) => ReadonlyArray<DisabledInterval>;
 
     // Actions
     useUpsertResources: () => (rs: Array<Pick<Resource, 'id' | 'name' | 'avatar'>>) => void;
-    useSetDayData: () => (payload: SetDayDataPayload) => void;
+    useSetDayDataFor: () => (dayKey: DayKey, payload: SetDayDataPayload) => void;
 
     useGetSelectedEvent: () => Event | null;
     useSetSelectedEvent: () => (ev: Event | null) => void;
+
+    useSetDate: () => (date: Date) => void;
+    useGetDate: () => Date;
 
     // --- NEW: dragged draft APIs ---
     useGetDraggedEventDraft: () => DraggedEventDraft | null;

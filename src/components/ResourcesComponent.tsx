@@ -14,19 +14,21 @@ type Props = {
     resourceIds: number[];
     APPOINTMENT_BLOCK_WIDTH: number;
     onResourcePress?: (resource: Resource) => void;
+    date: Date;
 };
 
 type ResourceComponentProps = {
     id: number;
     APPOINTMENT_BLOCK_WIDTH: number;
     onResourcePress?: (resource: Resource) => void;
+    date: Date;
 }
 
-const ResourceComponent = ({id, onResourcePress, APPOINTMENT_BLOCK_WIDTH}: ResourceComponentProps) => {
+const ResourceComponent = ({id, onResourcePress, APPOINTMENT_BLOCK_WIDTH, date}: ResourceComponentProps) => {
     const {useResourceById, useEventsFor} =
         useCalendarBinding();
     const resource = useResourceById(id);
-    const events = useEventsFor(id);
+    const events = useEventsFor(id, date);
     const titleFace = useResolvedFont({fontWeight: '700'});
 
     return <Col style={[{
@@ -40,7 +42,7 @@ const ResourceComponent = ({id, onResourcePress, APPOINTMENT_BLOCK_WIDTH}: Resou
                         onResourcePress(resource);
                 }}
                 name={resource?.name}
-                circleSize={40}
+                circleSize={Math.min(40, APPOINTMENT_BLOCK_WIDTH - 12)}
                 fontSize={16}
                 badge={events?.length}
                 image={resource?.avatar}
@@ -57,11 +59,12 @@ const ResourceComponent = ({id, onResourcePress, APPOINTMENT_BLOCK_WIDTH}: Resou
     </Col>
 }
 
-export const ResourcesComponent = ({resourceIds, onResourcePress, APPOINTMENT_BLOCK_WIDTH}: Props) => {
+export const ResourcesComponent = ({resourceIds, onResourcePress, APPOINTMENT_BLOCK_WIDTH, date}: Props) => {
     return (
         <>
             {resourceIds?.map((id) => {
                 return <ResourceComponent
+                    date={date}
                     key={id}
                     id={id}
                     APPOINTMENT_BLOCK_WIDTH={APPOINTMENT_BLOCK_WIDTH}
@@ -86,19 +89,19 @@ interface StaffAvatarProps {
     textColor?: string;
 }
 
-function StaffAvatar({
-                         name,
-                         circleSize = 60,
-                         fontSize = 36,
-                         image,
-                         badge,
-                         badgeStyle,
-                         onPress,
-                         containerStyle,
-                         ringColor = '#DAEEE7',
-                         avatarColor,
-                         textColor,
-                     }: StaffAvatarProps) {
+export function StaffAvatar({
+                                name,
+                                circleSize = 60,
+                                fontSize = 36,
+                                image,
+                                badge,
+                                badgeStyle,
+                                onPress,
+                                containerStyle,
+                                ringColor = '#DAEEE7',
+                                avatarColor,
+                                textColor,
+                            }: StaffAvatarProps) {
     const titleFace = useResolvedFont({fontWeight: '700'});
 
     return (

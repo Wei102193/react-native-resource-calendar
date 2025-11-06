@@ -68,14 +68,14 @@ export const DraggableEvent = ({
                 },
             ],
         };
-    }, [selectedEvent, eventHeight, APPOINTMENT_BLOCK_WIDTH]);
+    }, [selectedEvent, APPOINTMENT_BLOCK_WIDTH]);
 
     const initialDisplayTime = useMemo(() => {
         // Use the initial values calculated above, not the shared value
         const start = minutesToTime(positionToMinutes(eventStartedTop.value, hourHeight));
         const end = minutesToTime(positionToMinutes(eventStartedTop.value + eventHeight.value, hourHeight));
         return `${start} - ${end}`;
-    }, [eventHeight.value, hourHeight, eventStartedTop.value]);
+    }, [hourHeight]);
 
     const animatedTimeProps = useAnimatedProps<AnimatedTextInputProps>(() => {
         const start = minutesToTime(positionToMinutes(eventStartedTop.value, hourHeight));
@@ -83,7 +83,7 @@ export const DraggableEvent = ({
         return {
             text: `${start} - ${end}`
         };
-    }, []);
+    }, [hourHeight]);
 
     const resolved =
         typeof styleOverrides === 'function'

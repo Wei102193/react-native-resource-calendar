@@ -10,38 +10,47 @@ import type {
     Event,
     Resource,
     ResourceId,
-} from '../../types/calendarTypes';
+} from '@/types/calendarTypes';
 import {useStoreWithEqualityFn} from "zustand/traditional";
+import {format} from "date-fns";
 
 type ByResource<T> = Record<ResourceId, T[]>;
+type ByDay<T> = Record<string, ByResource<T>>;
 
 type State = {
-    // Single-day slices
+    date: Date;
     resourcesById: Record<ResourceId, Resource>;
-    eventsByResource: ByResource<Event>;
-    disabledBlocksByResource: ByResource<DisabledBlock>;
-    disabledIntervalsByResource: ByResource<DisabledInterval>;
     selectedEvent: Event | null;
     draggedEventDraft: DraggedEventDraft | null;
 
+    // NEW: multi-day slices
+    eventsByDay: ByDay<Event>;
+    disabledBlocksByDay: ByDay<DisabledBlock>;
+    disabledIntervalsByDay: ByDay<DisabledInterval>;
+
     // Actions
     upsertResources: (rs: Array<Pick<Resource, 'id' | 'name' | 'avatar'>>) => void;
-    setDayData: (payload: SetDayDataPayload) => void;
+    setDayDataFor: (dayKey: string, payload: SetDayDataPayload) => void;
     setSelectedEvent: (evt: Event | null) => void;
-    clearDay: () => void;
     setDraggedEventDraft: (draft: DraggedEventDraft | null) => void;
+    setDate: (date: Date) => void;
 };
 
 const createCalendarStore = () =>
     createStore<State>((set) => ({
+        date: new Date(),
         resourcesById: {},
-        eventsByResource: {},
-        disabledBlocksByResource: {},
-        disabledIntervalsByResource: {},
+
+        // NEW multi-day
+        eventsByDay: {},
+        disabledBlocksByDay: {},
+        disabledIntervalsByDay: {},
+
         selectedEvent: null,
         draggedEventDraft: null,
 
         setSelectedEvent: (evt) => set({selectedEvent: evt}),
+        setDate: (date) => set({date}),
 
         upsertResources: (rs) =>
             set((s) => {
@@ -59,21 +68,21 @@ const createCalendarStore = () =>
                 return changed ? {resourcesById: next} : {};
             }),
 
-        setDayData: ({events, disabledBlocks, disableIntervals}) =>
+        // NEW: multi-day write
+        setDayDataFor: (dayKey, {events, disabledBlocks, disableIntervals}) =>
             set((s) => ({
-                eventsByResource: events ?? s.eventsByResource,
-                disabledBlocksByResource: disabledBlocks ?? s.disabledBlocksByResource,
-                disabledIntervalsByResource: disableIntervals ?? s.disabledIntervalsByResource,
+                eventsByDay: events
+                    ? {...s.eventsByDay, [dayKey]: events}                       // replace whole day
+                    : s.eventsByDay,
+                disabledBlocksByDay: disabledBlocks
+                    ? {...s.disabledBlocksByDay, [dayKey]: disabledBlocks}       // replace whole day
+                    : s.disabledBlocksByDay,
+                disabledIntervalsByDay: disableIntervals
+                    ? {...s.disabledIntervalsByDay, [dayKey]: disableIntervals}  // replace whole day
+                    : s.disabledIntervalsByDay,
             })),
 
         setDraggedEventDraft: (draft) => set({draggedEventDraft: draft}),
-
-        clearDay: () =>
-            set({
-                eventsByResource: {},
-                disabledBlocksByResource: {},
-                disabledIntervalsByResource: {},
-            }),
     }));
 
 // Scoped store (instance-safe)
@@ -106,27 +115,41 @@ const useSetSelectedEvent: CalendarStoreBinding['useSetSelectedEvent'] =
     () => useBound((s) => s.setSelectedEvent);
 
 const useEventsFor: CalendarStoreBinding['useEventsFor'] =
-    (resourceId) => useBound((s) => s.eventsByResource[resourceId] ?? [], shallow);
+    (resourceId, dayDate) => useBound(s => {
+        const key = format(dayDate, 'yyyy-MM-dd');
+        return s.eventsByDay?.[key]?.[resourceId] ?? [];
+    }, shallow);
 
 const useGetDraggedEventDraft: CalendarStoreBinding['useGetDraggedEventDraft'] =
     () => useBound((s) => s.draggedEventDraft);
 
 const useDisabledBlocksFor: CalendarStoreBinding['useDisabledBlocksFor'] =
-    (resourceId) => useBound((s) => s.disabledBlocksByResource[resourceId] ?? [], shallow);
+    (resourceId, dayDate) => useBound(s => {
+        const key = format(dayDate, 'yyyy-MM-dd');
+        return s.disabledBlocksByDay?.[key]?.[resourceId] ?? [];
+    }, shallow);
 
 const useDisabledIntervalsFor: CalendarStoreBinding['useDisabledIntervalsFor'] =
-    (resourceId) => useBound((s) => s.disabledIntervalsByResource[resourceId] ?? [], shallow);
+    (resourceId, dayDate) => useBound(s => {
+        const key = format(dayDate, 'yyyy-MM-dd');
+        return s.disabledIntervalsByDay?.[key]?.[resourceId] ?? []
+    }, shallow);
 
 // Action hooks
 const useUpsertResources: CalendarStoreBinding['useUpsertResources'] =
     () => useBound((s) => s.upsertResources);
 
-const useSetDayData: CalendarStoreBinding['useSetDayData'] =
-    () => useBound((s) => s.setDayData);
+const useSetDayDataFor: CalendarStoreBinding['useSetDayDataFor'] =
+    () => useBound((s) => s.setDayDataFor);
 
 const useSetDraggedEventDraft: CalendarStoreBinding['useSetDraggedEventDraft'] =
     () => useBound((s) => s.setDraggedEventDraft);
 
+const useSetDate: CalendarStoreBinding['useSetDate'] =
+    () => useBound((s) => s.setDate);
+
+const useGetDate: CalendarStoreBinding['useGetDate'] =
+    () => useBound((s) => s.date);
 // Export the binding
 export const zustandBinding: CalendarStoreBinding = {
     Provider,
@@ -135,7 +158,9 @@ export const zustandBinding: CalendarStoreBinding = {
     useDisabledBlocksFor,
     useDisabledIntervalsFor,
     useUpsertResources,
-    useSetDayData,
+    useSetDate,
+    useGetDate,
+    useSetDayDataFor,
     useGetSelectedEvent,
     useSetSelectedEvent,
     useGetDraggedEventDraft,

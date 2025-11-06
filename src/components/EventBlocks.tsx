@@ -16,6 +16,7 @@ interface EventBlocksProps {
     isEventSelected?: FlagFn;
     isEventDisabled?: FlagFn;
     mode: LayoutMode;
+    date?: Date;
 }
 
 const EventBlocks: React.FC<EventBlocksProps> = React.memo(({
@@ -27,11 +28,13 @@ const EventBlocks: React.FC<EventBlocksProps> = React.memo(({
                                                                 eventRenderer,
                                                                 isEventDisabled, isEventSelected,
                                                                 mode,
+                                                                date: dateProp
                                                             }) => {
-    const {useEventsFor} =
-        useCalendarBinding();
-    const events = useEventsFor(id);
 
+    const {useEventsFor, useGetDate} =
+        useCalendarBinding();
+    const date = useGetDate();
+    const events = useEventsFor(id, dateProp ?? date);
     const frameMap = useMemo(
         () => computeEventFrames(events, EVENT_BLOCK_WIDTH, mode),
         [events, mode, EVENT_BLOCK_WIDTH]

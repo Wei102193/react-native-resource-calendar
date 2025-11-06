@@ -12,11 +12,26 @@ import Animated, {
 import {Dimensions, LayoutChangeEvent, Platform, StyleSheet, useWindowDimensions, View} from "react-native";
 import {FlashList} from "@shopify/flash-list";
 import * as Haptics from "expo-haptics";
-import {positionToMinutes, scalePosition, TIME_LABEL_WIDTH} from '@/utilities/helpers';
+import {
+    combineDateAndTime,
+    findDayIndexFor,
+    findResourceIndexFor,
+    positionToMinutes,
+    scalePosition,
+    TIME_LABEL_WIDTH
+} from '@/utilities/helpers';
 import {TimeLabels} from './TimeLabels';
 import {ResourcesComponent} from "./ResourcesComponent";
 import {EventGridBlocksSkia} from "./EventGridBlocks";
-import {CalendarTheme, DisabledBlock, DisabledInterval, Event, LayoutMode, Resource} from '@/types/calendarTypes';
+import {
+    CalendarMode,
+    CalendarTheme,
+    DisabledBlock,
+    DisabledInterval,
+    Event,
+    LayoutMode,
+    Resource
+} from '@/types/calendarTypes';
 import {StoreFeeder} from '@/store/StoreFeeder';
 import {useCalendarBinding} from '@/store/bindings/BindingProvider';
 import DisabledIntervals from './DisabledIntervals';
@@ -25,8 +40,13 @@ import EventBlock, {EventRenderer, EventSlots, StyleOverrides} from "@/component
 import {DraggableEvent} from "@/components/DraggableEvent";
 import {CalendarThemeProvider} from "@/theme/ThemeContext";
 import EventBlocks from "@/components/EventBlocks";
+import {DaysComponent} from "@/components/DaysComponent";
+import {addDays, format} from 'date-fns';
 
 type FlagFn = (event: Event) => boolean;
+type Column =
+    | { kind: 'resource'; resourceId: number }
+    | { kind: 'day'; dayIndex: number; dayDate: Date };
 
 interface CalendarProps {
     timezone?: string;
@@ -56,6 +76,9 @@ interface CalendarProps {
 
     theme?: CalendarTheme;
     overLappingLayoutMode?: LayoutMode;
+
+    mode?: CalendarMode;
+    activeResourceId?: number;
 }
 
 type Layout = {
@@ -74,7 +97,7 @@ const CalendarInner: React.FC<CalendarProps> = (props) => {
 
     const {
         date,
-        numberOfColumns = 3,
+        numberOfColumns: numberOfColumnsProp = 3,
         startMinutes,
         hourHeight = 120,
         snapIntervalInMinutes = 5,
@@ -88,7 +111,17 @@ const CalendarInner: React.FC<CalendarProps> = (props) => {
         eventSlots,
         eventStyleOverrides,
         overLappingLayoutMode = 'stacked',
+        mode = 'day',
+        activeResourceId,
     } = props;
+
+    const numberOfColumns = mode === 'day' ? numberOfColumnsProp : (mode === 'week' ? 7 : 3);
+    const isMultiDay = mode !== 'day';
+    const visibleDayCount = isMultiDay ? (mode === 'week' ? 7 : 3) : 1;
+    const days = useMemo(
+        () => Array.from({length: visibleDayCount}, (_, i) => addDays(date, i)),
+        [date, visibleDayCount]
+    );
 
     const snapInterval = (hourHeight / 60) * snapIntervalInMinutes;
     const onPressRef = React.useRef(onEventPress);
@@ -156,6 +189,8 @@ const CalendarInner: React.FC<CalendarProps> = (props) => {
     const hourHeightRef = useRef(hourHeight);
     const resourcesRef = useRef(resources);
     const apptWidthRef = useRef(APPOINTMENT_BLOCK_WIDTH);
+    const isMultiDayRef = useRef(isMultiDay);
+    const daysRef = useRef(days);
 
     useEffect(() => {
         hourHeightRef.current = hourHeight
@@ -166,6 +201,13 @@ const CalendarInner: React.FC<CalendarProps> = (props) => {
     useEffect(() => {
         apptWidthRef.current = APPOINTMENT_BLOCK_WIDTH
     }, [APPOINTMENT_BLOCK_WIDTH]);
+    useEffect(() => {
+        isMultiDayRef.current = isMultiDay
+    }, [isMultiDay]);
+    useEffect(() => {
+        daysRef.current = days
+    }, [days]);
+
     useEffect(() => {
         if (!selectedEvent) {
             setDraggedEventDraft(null);
@@ -203,6 +245,47 @@ const CalendarInner: React.FC<CalendarProps> = (props) => {
     const triggerHaptic = useCallback(() => {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }, []);
+
+    const resourceIds = useMemo(() => {
+        const ids = resources?.map(item => item?.id) || [];
+        if (JSON.stringify(prevResourceIdsRef.current) !== JSON.stringify(ids)) {
+            prevResourceIdsRef.current = ids;
+        }
+        return prevResourceIdsRef.current;
+    }, [resources]);
+
+    const finalizeDrag = React.useCallback((
+        colIndex: number,
+        adjustedTop: number,
+        height: number
+    ) => {
+        // decide what column means based on mode
+        const isMultiDay = mode !== 'day';
+        const landedResourceId = !isMultiDay
+            ? resourceIds[colIndex]                     // day mode → resource column
+            : (activeResourceId ?? resourceIds[0]);      // multi-day → fixed resource
+
+        const landedDate = format(!isMultiDay
+            ? date                   // day mode → resource column
+            : days[colIndex], "yyyy-MM-dd")                             // day mode → constant day
+
+        setDraggedEventDraft({
+            event: selectedEvent!, // ensure this is not stale (store/ref)
+            from: positionToMinutes(adjustedTop, hourHeight),
+            to: positionToMinutes(adjustedTop + height, hourHeight),
+            resourceId: landedResourceId,
+            date: landedDate,
+        });
+    }, [mode, resourceIds, activeResourceId, selectedEvent, hourHeight, setDraggedEventDraft, days]);
+
+    const columns: Column[] = useMemo(() => {
+        if (!isMultiDay) {
+            // Day mode: one day x multiple resources (keep current behavior)
+            return resourceIds.map(resourceId => ({kind: 'resource', resourceId}));
+        }
+        // Multi-day mode: multiple days x single active resource
+        return days.map((dayDate, dayIndex) => ({kind: 'day', dayIndex, dayDate}));
+    }, [isMultiDay, resourceIds, days]);
 
     const panGesture = Gesture.Pan()
         .manualActivation(!isIOS)
@@ -351,11 +434,9 @@ const CalendarInner: React.FC<CalendarProps> = (props) => {
             const finalXOnScreen = panXAbs.value;
             const absoluteX = finalXOnScreen + scrollX.value;
             const newStaffIndex = Math.floor((absoluteX - TIME_LABEL_WIDTH) / APPOINTMENT_BLOCK_WIDTH);
-            const clampedStaffIndex = Math.max(0, Math.min(newStaffIndex, resources.length - 1));
-            const endedResource = resources[clampedStaffIndex];
-            const finalPanXValue = TIME_LABEL_WIDTH + (clampedStaffIndex * APPOINTMENT_BLOCK_WIDTH) - scrollX.value + (APPOINTMENT_BLOCK_WIDTH / 2);
+            const colIndex = Math.max(0, Math.min(newStaffIndex, columns.length - 1));
+            const finalPanXValue = TIME_LABEL_WIDTH + (colIndex * APPOINTMENT_BLOCK_WIDTH) - scrollX.value + (APPOINTMENT_BLOCK_WIDTH / 2);
 
-            // --- Animate to Final Resting Place ---
             // This provides the smooth "snap" effect for both axes.
             panYAbs.value = withSpring(finalPanYValue);
             panXAbs.value = withSpring(finalPanXValue);
@@ -373,12 +454,7 @@ const CalendarInner: React.FC<CalendarProps> = (props) => {
             isPulling.value = false;
             isDragging.value = false
 
-            runOnJS(setDraggedEventDraft)({
-                event: selectedEvent!,
-                from: positionToMinutes(adjustedFinalEventTop, hourHeight),
-                to: positionToMinutes(adjustedFinalEventTop + eventHeight.value, hourHeight),
-                resourceId: endedResource?.id!
-            });
+            runOnJS(finalizeDrag)(colIndex, adjustedFinalEventTop, eventHeight.value);
         });
 
     const scrollListTo = (x: number) => {
@@ -478,10 +554,22 @@ const CalendarInner: React.FC<CalendarProps> = (props) => {
 
             // --- Compute horizontal placement ---
             const resources = resourcesRef.current;
+            const days = daysRef.current;
             const APPOINTMENT_BLOCK_WIDTH = apptWidthRef.current;
-            const staffIndex = resources.findIndex(r => r.id === event.resourceId);
+            const isMultiDay = isMultiDayRef.current;
             const leftmostColumnIndex = Math.round(scrollX.value / APPOINTMENT_BLOCK_WIDTH);
-            const screenColumn = staffIndex - leftmostColumnIndex;
+
+            let absoluteColIndex: number;
+
+            if (!isMultiDay) {
+                // day mode → column represents a resource
+                absoluteColIndex = findResourceIndexFor(event.resourceId, resources?.map(r => r.id));
+            } else {
+                // multi-day → column represents a day
+                absoluteColIndex = findDayIndexFor(event.date, days);
+            }
+            const screenColumn = absoluteColIndex - leftmostColumnIndex;
+
             const selectedAppointmentStartedX =
                 TIME_LABEL_WIDTH +
                 APPOINTMENT_BLOCK_WIDTH / 2 +
@@ -514,20 +602,14 @@ const CalendarInner: React.FC<CalendarProps> = (props) => {
 
     const flashListScrollHandler = useAnimatedScrollHandler({
         onScroll: (event) => {
-            const offsetX = event?.contentOffset?.x;
-            // Sync header without going through JS
-            scrollTo(headerScrollViewRef, offsetX, 0, false);
-            scrollX.value = offsetX;
+            if (!isMultiDay) {
+                const offsetX = event?.contentOffset?.x;
+                // Sync header without going through JS
+                scrollTo(headerScrollViewRef, offsetX, 0, false);
+                scrollX.value = offsetX;
+            }
         },
     });
-
-    const resourceIds = useMemo(() => {
-        const ids = resources?.map(item => item?.id) || [];
-        if (JSON.stringify(prevResourceIdsRef.current) !== JSON.stringify(ids)) {
-            prevResourceIdsRef.current = ids;
-        }
-        return prevResourceIdsRef.current;
-    }, [resources]);
 
     const handleBlockPress = useCallback((resourceId: number, time: string) => {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -554,30 +636,41 @@ const CalendarInner: React.FC<CalendarProps> = (props) => {
         dateRef.current = date; // Update the ref whenever date prop changes
     }, [date]);
 
-    const renderItem = useCallback(({item}: any) => {
+    const renderItem = useCallback(({item, index}: any) => {
+        // Resolve which date & resource this column represents:
+        const rid = !isMultiDay
+            ? item
+            : (activeResourceId ?? resourceIds[0]);           // multi-day uses the single active resource
+
+        const dayDate = !isMultiDay
+            ? undefined                            // day mode uses the single base day (existing)
+            : (item as Extract<Column, { kind: 'day' }>).dayDate;
+
         return (
-            <View key={item} style={{width: APPOINTMENT_BLOCK_WIDTH}}>
+            <View key={index} style={{width: APPOINTMENT_BLOCK_WIDTH}}>
                 {/* Add 15-minute background blocks for each user column */}
                 <View style={styles.timelineContainer}>
                     <EventGridBlocksSkia
-                        dateRef={dateRef}
                         hourHeight={hourHeight}
                         APPOINTMENT_BLOCK_WIDTH={APPOINTMENT_BLOCK_WIDTH}
-                        handleBlockPress={(date) => handleBlockPress(item, date)}
+                        handleBlockPress={(time) => handleBlockPress(rid, combineDateAndTime(dayDate ?? dateRef.current, time))}
                     />
                     <DisabledIntervals
-                        id={item}
+                        id={rid!}
+                        date={dayDate}
                         APPOINTMENT_BLOCK_WIDTH={APPOINTMENT_BLOCK_WIDTH}
                         hourHeight={hourHeight}
                     />
                     <DisabledBlocks
-                        id={item}
+                        id={rid!}
+                        date={dayDate}
                         APPOINTMENT_BLOCK_WIDTH={APPOINTMENT_BLOCK_WIDTH}
                         hourHeight={hourHeight}
                         onDisabledBlockPress={stableOnDisabledBlockPress}
                     />
                     <EventBlocks
-                        id={item}
+                        id={rid!}
+                        date={dayDate}
                         EVENT_BLOCK_WIDTH={APPOINTMENT_BLOCK_WIDTH}
                         hourHeight={hourHeight}
                         onPress={stableOnPress}
@@ -590,38 +683,57 @@ const CalendarInner: React.FC<CalendarProps> = (props) => {
                 </View>
             </View>
         );
-    }, [resourceIds, APPOINTMENT_BLOCK_WIDTH, hourHeight,
+    }, [
+        isMultiDay,
+        activeResourceId,
+        resourceIds,
+        APPOINTMENT_BLOCK_WIDTH,
+        hourHeight,
         stableRenderer,
         isEventSelectedStable,
         isEventDisabledStable,
         overLappingLayoutMode,
-        stableOnPress, internalStableOnLongPress, stableOnDisabledBlockPress, dateRef]);
+        stableOnPress,
+        internalStableOnLongPress,
+        stableOnDisabledBlockPress,
+        dateRef
+    ]);
 
     return <>
-        <StoreFeeder resources={resources} store={binding}/>
+        <StoreFeeder resources={resources} store={binding} baseDate={date}/>
         <View style={{flex: 1}}>
-            <View>
-                <Animated.ScrollView
-                    style={{backgroundColor: "white"}}
-                    showsHorizontalScrollIndicator={false}
-                    contentContainerStyle={{
-                        overflow: "visible",
-                        paddingLeft: TIME_LABEL_WIDTH,
-                        paddingVertical: 15,
-                    }}
-                    horizontal
-                    scrollEventThrottle={16}
-                    decelerationRate="fast"
-                    ref={headerScrollViewRef}
-                    scrollEnabled={false}
-                >
-                    <ResourcesComponent
-                        resourceIds={resourceIds}
+            {
+                !isMultiDay ? <View>
+                        <Animated.ScrollView
+                            style={{backgroundColor: "white"}}
+                            showsHorizontalScrollIndicator={false}
+                            contentContainerStyle={{
+                                overflow: "visible",
+                                paddingLeft: TIME_LABEL_WIDTH,
+                                paddingVertical: 15,
+                            }}
+                            horizontal
+                            scrollEventThrottle={16}
+                            decelerationRate="fast"
+                            ref={headerScrollViewRef}
+                            scrollEnabled={false}
+                        >
+                            <ResourcesComponent
+                                date={dateRef.current}
+                                resourceIds={resourceIds}
+                                APPOINTMENT_BLOCK_WIDTH={APPOINTMENT_BLOCK_WIDTH}
+                                onResourcePress={onResourcePress}
+                            />
+                        </Animated.ScrollView>
+                    </View>
+                    : <DaysComponent
                         APPOINTMENT_BLOCK_WIDTH={APPOINTMENT_BLOCK_WIDTH}
+                        date={date}
+                        mode={mode}
+                        activeResourceId={activeResourceId ?? resourceIds[0]}
                         onResourcePress={onResourcePress}
                     />
-                </Animated.ScrollView>
-            </View>
+            }
             <GestureDetector gesture={panGesture}>
                 <Animated.View
                     key={numberOfColumns + width + hourHeight}
@@ -668,7 +780,7 @@ const CalendarInner: React.FC<CalendarProps> = (props) => {
                             onScroll={flashListScrollHandler}  // Sync with header
                             estimatedItemSize={APPOINTMENT_BLOCK_WIDTH}
                             removeClippedSubviews={true}
-                            data={resourceIds}
+                            data={!isMultiDay ? resourceIds : columns}
                             horizontal={true}
                             renderItem={renderItem}
                             keyExtractor={(item, index) => index + ""}
