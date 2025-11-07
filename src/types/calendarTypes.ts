@@ -3,7 +3,7 @@ export type ResourceId = number;
 export type Event = {
     id: number;
     resourceId: ResourceId;
-    date: string; // 'YYYY-MM-DD'
+    date: string; // 'yyyy-MM-dd'
     from: number;
     to: number;
     title?: string;
@@ -16,7 +16,7 @@ export type Event = {
 export type DisabledBlock = {
     id: number;
     resourceId: ResourceId;
-    date: string; // 'YYYY-MM-DD'
+    date: string; // 'yyyy-MM-dd'
     from: number;
     to: number;
     title?: string;
@@ -24,7 +24,7 @@ export type DisabledBlock = {
 
 export type DisabledInterval = {
     resourceId: ResourceId;
-    date: string; // 'YYYY-MM-DD'
+    date: string; // 'yyyy-MM-dd'
     from: number;
     to: number;
 };
@@ -37,8 +37,8 @@ export type Resource = {
 
 export type DraggedEventDraft = {
     event: Event;
+    date: string; // 'yyyy-MM-dd'
     from: number;
-    date: string; // 'YYYY-MM-DD'
     to: number;
     resourceId: ResourceId;
 }

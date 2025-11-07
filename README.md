@@ -287,6 +287,7 @@ type ResourceId = number;
 type Event = {
     id: number;
     resourceId: ResourceId;
+    date: string; // 'yyyy-MM-dd' eg. '2025-11-09'
     from: number;
     to: number;
     title?: string;
@@ -299,6 +300,7 @@ type Event = {
 type DisabledBlock = {
     id: number;
     resourceId: ResourceId;
+    date: string; // 'yyyy-MM-dd' eg. '2025-11-09'
     from: number;
     to: number;
     title?: string;
@@ -306,6 +308,7 @@ type DisabledBlock = {
 
 type DisabledInterval = {
     resourceId: ResourceId;
+    date: string; // 'yyyy-MM-dd' eg. '2025-11-09'
     from: number;
     to: number;
 };
@@ -318,6 +321,7 @@ type Resource = {
 
 type DraggedEventDraft = {
     event: Event,
+    date: string; // 'yyyy-MM-dd' eg. '2025-11-09'
     from: number,
     to: number,
     resourceId: ResourceId
