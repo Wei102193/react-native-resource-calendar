@@ -214,6 +214,10 @@ const CalendarInner: React.FC<CalendarProps> = (props) => {
         }
     }, [selectedEvent]);
 
+    useEffect(() => {
+        scrollX.value = 0;
+    }, [mode]);
+
     const verticalScrollViewRef = useAnimatedRef<Animated.ScrollView>();
     const headerScrollViewRef = useAnimatedRef<Animated.ScrollView>();
 
