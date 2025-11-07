@@ -76,10 +76,10 @@ import {StyleSheet, TouchableOpacity, View} from 'react-native';
 import {Calendar, DraggedEventDraft, Event, LayoutMode, useCalendarBinding} from "react-native-resource-calendar";
 import {SafeAreaView} from "react-native-safe-area-context";
 import {ThemedText} from "@/components/ThemedText";
-import {resourceData} from "@/app/(tabs)/fakeData";
 import EventTopRight from "@/components/EventTopRight";
 import {FontAwesome} from "@expo/vector-icons";
 import {statusColor} from "@/utilities/helpers";
+import {resourceData} from "@/assets/fakeData";
 
 export default function App() {
     const {
