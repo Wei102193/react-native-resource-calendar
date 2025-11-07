@@ -7,7 +7,7 @@ Expo compatibility.
 
 ## ✨ Features
 
-- ✅ Multi-resource timeline layout
+- ✅ Multi-resource/Multi-days timeline layout
 - 🎨 Customizable event slots (Body, TopRight)
 - 📱 Smooth Reanimated drag-and-drop
 - ⏰ Timezone-aware time labels
