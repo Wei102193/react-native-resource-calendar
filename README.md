@@ -18,6 +18,7 @@ Expo compatibility.
 ---
 
 ## 🎬 Demo
+
 https://github.com/user-attachments/assets/68fe0283-73ce-4689-8241-6587b817ecbd
 
 ---
@@ -98,27 +99,34 @@ export default function App() {
     const updateResourcesOnDrag = React.useCallback(
         (draft: DraggedEventDraft) => {
             setResources((prev: any) => {
-                const {event, from, to, resourceId} = draft;
+                const {event, from, to, resourceId, date} = draft;
 
                 return prev.map((res: any) => {
+                    // ✅ if this is the new target resource
                     if (res.id === resourceId) {
+                        // was the event originally in a different resource?
                         const wasDifferentResource = event.resourceId !== resourceId;
 
+                        // clone event with new times and resourceId
                         const updatedEvent = {
                             ...event,
                             from,
                             to,
                             resourceId,
+                            date
                         };
 
                         return {
                             ...res,
                             events: wasDifferentResource
+                                // if moved from another resource, append it here
                                 ? [...res.events, updatedEvent]
+                                // else update it in place
                                 : res.events.map((e: any) => (e.id === event.id ? updatedEvent : e)),
                         };
                     }
 
+                    // ✅ if this is the old resource and event moved away
                     if (res.id === event.resourceId && event.resourceId !== resourceId) {
                         return {
                             ...res,
@@ -126,6 +134,7 @@ export default function App() {
                         };
                     }
 
+                    // ✅ untouched resources
                     return res;
                 });
             });
@@ -145,10 +154,17 @@ export default function App() {
         setNumberOfColumns(randomNumberOfColumns);
         setLayoutMode(layoutMode === 'stacked' ? 'columns' : 'stacked');
     }
-    
+
+    const addDays = (days: number) => {
+        const newDate = new Date(date);
+        newDate.setDate(newDate.getDate() + days);
+        setDate(newDate);
+    };
+
     return (
         <SafeAreaView style={{backgroundColor: "#fff", flex: 1}} edges={["top"]}>
             <Calendar
+                // mode={'week'}
                 theme={{
                     typography: {
                         fontFamily: 'NunitoSans',
@@ -238,26 +254,28 @@ export default function App() {
 
 The `Calendar` component accepts a flexible set of props for customizing layout, theme, and interactivity.
 
-| Prop                        | Type                                                                                                             | Default          | Description                                                                                                                               |
-|-----------------------------|------------------------------------------------------------------------------------------------------------------|------------------|-------------------------------------------------------------------------------------------------------------------------------------------|
-| **`date`**                  | `Date`                                                                                                           | `new Date()`     | The current date displayed in the calendar.                                                                                               |
-| **`resources`**             | `Array<Resource & { events: Event[]; disabledBlocks?: DisabledBlock[]; disableIntervals?: DisabledInterval[] }>` | **required**     | Columns to render. Each resource can provide its own events and optional disabled ranges.                                                 |
-| **`timezone`**              | `string`                                                                                                         | device time zone | Time zone used for time labels and taps-to-date conversion.                                                                               |
-| **`startMinutes`**          | `number`                                                                                                         | `0` (00:00)      | Start of the visible timeline in minutes from midnight (e.g. `8 * 60` = 08:00).                                                           |
-| **`numberOfColumns`**       | `number`                                                                                                         | `3`              | How many resource columns to show side-by-side.                                                                                           |
-| **`hourHeight`**            | `number`                                                                                                         | `120`            | Vertical scale: pixels used to render 1 hour. (Affects scrolling/snapping.)                                                               |
-| **`snapIntervalInMinutes`** | `number`                                                                                                         | `5`              | Drag/resize snapping granularity in minutes.                                                                                              |
-| **`overLappingLayoutMode`** | `LayoutMode` (`'stacked' \| 'columns'`)                                                                          | `'stacked'`      | Strategy for laying out overlapping events within a column.                                                                               |
-| **`theme`**                 | `CalendarTheme`                                                                                                  | —                | Theme overrides (typography).                                                                                                             |
-| **`eventSlots`**            | `EventSlots`                                                                                                     | —                | Slot renderers to customize event content. (Common keys: `Body`, `TopRight`.) Example: `{ Body: ({event}) => <MyBody event={event} /> }`. |
-| **`eventStyleOverrides`**   | `StyleOverrides \| ((event: Event) => StyleOverrides \| undefined)`                                              | —                | Per-event styling override (e.g., background, border, radius). Function form lets you style by event.                                     |
-| **`isEventSelected`**       | `(event: Event) => boolean`                                                                                      | `() => false`    | Tell the calendar which events are currently selected.                                                                                    |
-| **`isEventDisabled`**       | `(event: Event) => boolean`                                                                                      | `() => false`    | Mark events as disabled (non-interactive).                                                                                                |
-| **`onResourcePress`**       | `(resource: Resource) => void`                                                                                   | —                | Fired when a resource header is pressed.                                                                                                  |
-| **`onBlockLongPress`**      | `(resource: Resource, date: Date) => void`                                                                       | —                | Fired when the user long-presses an empty time block in a column.                                                                         |
-| **`onDisabledBlockPress`**  | `(block: DisabledBlock) => void`                                                                                 | —                | Fired when a disabled block (e.g., lunch) is tapped.                                                                                      |
-| **`onEventPress`**          | `(event: Event) => void`                                                                                         | —                | Fired when an event is tapped.                                                                                                            |
-| **`onEventLongPress`**      | `(event: Event) => void`                                                                                         | —                | Fired when an event is long-pressed. (The calendar also prepares internal drag state at this time.)                                       |
+| Prop                        | Type                                                                                                             | Default                 | Description                                                                                                                                             |
+|-----------------------------|------------------------------------------------------------------------------------------------------------------|-------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **`date`**                  | `Date`                                                                                                           | `new Date()`            | The anchor day shown in the timeline. In multi-day modes this is the **first** visible day.                                                             |
+| **`mode`**                  | `CalendarMode` (`'day' \| '3days' \| 'week'`)                                                                    | `'day'`                 | Controls the column semantics. **day** = many resources for one day. **3days/week** = several days for one resource.                                    |
+| **`activeResourceId`**      | `number`                                                                                                         | first `resources[0].id` | When `mode !== 'day'`, columns represent days for **this** resource.                                                                                    |
+| **`resources`**             | `Array<Resource & { events: Event[]; disabledBlocks?: DisabledBlock[]; disableIntervals?: DisabledInterval[] }>` | **required**            | Resource columns. Each resource includes its day’s `events`, optional `disabledBlocks` (finite ranges), and `disableIntervals` (open/recurring ranges). |
+| **`timezone`**              | `string`                                                                                                         | device time zone        | Used for time labels and converting block taps to a `Date`.                                                                                             |
+| **`startMinutes`**          | `number`                                                                                                         | `0`                     | Start of visible timeline in minutes after midnight (e.g. `8 * 60` = 08:00).                                                                            |
+| **`numberOfColumns`**       | `number`                                                                                                         | `3`                     | **Day mode only.** How many resource columns to show side-by-side. (In multi-day modes, the column count is fixed by the mode: 3 or 7.)                 |
+| **`hourHeight`**            | `number`                                                                                                         | `120`                   | Vertical density, px per hour. Affects drag/resize and scroll snap.                                                                                     |
+| **`snapIntervalInMinutes`** | `number`                                                                                                         | `5`                     | Drag/resize snapping granularity (in minutes).                                                                                                          |
+| **`overLappingLayoutMode`** | `LayoutMode` (`'stacked' \| 'columns'`)                                                                          | `'stacked'`             | Strategy to lay out overlapping events inside a column.                                                                                                 |
+| **`theme`**                 | `CalendarTheme`                                                                                                  | —                       | Typography & palette overrides.                                                                                                                         |
+| **`eventSlots`**            | `EventSlots`                                                                                                     | —                       | Slot renderers to customize event content (e.g. `{ Body, TopRight }`).                                                                                  |
+| **`eventStyleOverrides`**   | `StyleOverrides \| ((event: Event) => StyleOverrides \| undefined)`                                              | —                       | Per-event style override (object or function).                                                                                                          |
+| **`isEventSelected`**       | `(event: Event) => boolean`                                                                                      | `() => false`           | Marks which events are currently selected.                                                                                                              |
+| **`isEventDisabled`**       | `(event: Event) => boolean`                                                                                      | `() => false`           | Marks events as disabled (non-interactive).                                                                                                             |
+| **`onResourcePress`**       | `(resource: Resource) => void`                                                                                   | —                       | Invoked when a resource header is pressed.                                                                                                              |
+| **`onBlockLongPress`**      | `(resource: Resource, date: Date) => void`                                                                       | —                       | Long-press on an empty block (grid).                                                                                                                    |
+| **`onDisabledBlockPress`**  | `(block: DisabledBlock) => void`                                                                                 | —                       | Tap on a disabled block (e.g., lunch).                                                                                                                  |
+| **`onEventPress`**          | `(event: Event) => void`                                                                                         | —                       | Tap on an event.                                                                                                                                        |
+| **`onEventLongPress`**      | `(event: Event) => void`                                                                                         | —                       | Long-press on an event. The calendar also preps internal drag state here.                                                                               |
 
 ---
 
@@ -310,6 +328,8 @@ type CalendarTheme = {
         fontFamily?: string;
     };
 };
+ 
+type CalendarMode = 'day' | '3days' | 'week';
 ```
 
 ---
