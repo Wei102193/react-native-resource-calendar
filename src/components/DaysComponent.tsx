@@ -2,7 +2,7 @@
 import * as React from 'react';
 import {useMemo} from 'react';
 import Row from "@/components/common/layout/Row";
-import {Text, View} from "react-native";
+import {Text} from "react-native";
 import {TIME_LABEL_WIDTH} from "@/utilities/helpers";
 import {StaffAvatar} from "@/components/ResourcesComponent";
 import {CalendarMode, Resource} from "@/types/calendarTypes";
@@ -45,15 +45,6 @@ export const DaysComponent = ({onResourcePress, activeResourceId, mode, date, AP
                     fontSize={16}
                     image={resource?.avatar}
                 />
-
-                <Text style={{
-                    fontSize: 14,
-                    fontFamily: titleFace,
-                    fontWeight: '700',
-                }}
-                      numberOfLines={1}
-                      allowFontScaling={false}
-                >{resource?.name}</Text>
             </Col>
             <Row style={{flex: 1}}>
                 {

@@ -561,7 +561,9 @@ const CalendarInner: React.FC<CalendarProps> = (props) => {
             const days = daysRef.current;
             const APPOINTMENT_BLOCK_WIDTH = apptWidthRef.current;
             const isMultiDay = isMultiDayRef.current;
-            const leftmostColumnIndex = Math.round(scrollX.value / APPOINTMENT_BLOCK_WIDTH);
+            const EPS = 0.0001;
+            // Use floor (+EPS) so we never jump to the next col early
+            const leftmostColumnIndex = Math.max(0, Math.floor((scrollX.value + EPS) / APPOINTMENT_BLOCK_WIDTH));
 
             let absoluteColIndex: number;
 
