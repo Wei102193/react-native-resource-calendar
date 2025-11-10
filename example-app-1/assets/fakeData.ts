@@ -1,3 +1,17 @@
+// Helpers: start-of-today -> YYYY-MM-DD, and day-offset generator
+const formatYMD = (d: Date) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+
+const d = (offset = 0) => {
+    const t = new Date();
+    t.setHours(0, 0, 0, 0);
+    t.setDate(t.getDate() + offset);
+    return formatYMD(t);
+};
+
+// Offsets map: 11-04 → d(0), 11-05 → d(1), 11-06 → d(2), 11-07 → d(3),
+// 11-08 → d(4), 11-09 → d(5), 11-10 → d(6)
+
 export const resourceData = [
     {
         id: 1,
@@ -12,7 +26,7 @@ export const resourceData = [
                 title: "Physical Therapy",
                 description: "Post-surgery recovery session",
                 meta: { status: 5, preferred: true, note: "High-priority recovery client with weekly check-ins." },
-                date: "2025-11-04",
+                date: d(0),
             },
             {
                 id: 103,
@@ -22,7 +36,7 @@ export const resourceData = [
                 title: "PT Follow-up",
                 description: "Overlap to test conflict handling",
                 meta: { status: 2, preferred: false, note: "Double-booked slot for conflict testing." },
-                date: "2025-11-05",
+                date: d(1),
             },
             {
                 id: 102,
@@ -32,7 +46,7 @@ export const resourceData = [
                 title: "Mobility Assessment",
                 description: "Initial consultation",
                 meta: { status: 3, preferred: false },
-                date: "2025-11-06",
+                date: d(2),
             },
             {
                 id: 104,
@@ -42,15 +56,13 @@ export const resourceData = [
                 title: "Gait Analysis",
                 description: "Overlapping with assessment",
                 meta: { status: 4, preferred: true, note: "Intended overlap for triage." },
-                date: "2025-11-07",
+                date: d(3),
             },
         ],
         disabledBlocks: [
-            { id: 1001, resourceId: 1, from: 12 * 60, to: 13 * 60, title: "Lunch Break", date: "2025-11-08" },
+            { id: 1001, resourceId: 1, from: 12 * 60, to: 13 * 60, title: "Lunch Break", date: d(4) },
         ],
-        disableIntervals: [
-            { resourceId: 1, from: 17 * 60, to: 24 * 60, date: "2025-11-09" },
-        ],
+        disableIntervals: [{ resourceId: 1, from: 17 * 60, to: 24 * 60, date: d(5) }],
     },
     {
         id: 2,
@@ -63,8 +75,12 @@ export const resourceData = [
                 from: 9 * 60 + 30,
                 to: 10 * 60 + 30,
                 title: "Personal Training",
-                meta: { status: 4, preferred: true, note: "Client focusing on weight loss — adjust cardio intensity." },
-                date: "2025-11-10",
+                meta: {
+                    status: 4,
+                    preferred: true,
+                    note: "Client focusing on weight loss — adjust cardio intensity.",
+                },
+                date: d(6),
             },
             {
                 id: 202,
@@ -73,7 +89,7 @@ export const resourceData = [
                 to: 16 * 60,
                 title: "Endurance Coaching",
                 meta: { status: 2, preferred: false },
-                date: "2025-11-04",
+                date: d(0),
             },
             {
                 id: 203,
@@ -82,15 +98,11 @@ export const resourceData = [
                 to: 16 * 60 + 15,
                 title: "VO₂ Max Test",
                 meta: { status: 5, preferred: true, note: "Intentional overlap with coaching." },
-                date: "2025-11-05",
+                date: d(1),
             },
         ],
-        disabledBlocks: [
-            { id: 2001, resourceId: 2, from: 13 * 60, to: 14 * 60, title: "Staff Meeting", date: "2025-11-06" },
-        ],
-        disableIntervals: [
-            { resourceId: 2, from: 7 * 60, to: 8 * 60, date: "2025-11-07" },
-        ],
+        disabledBlocks: [{ id: 2001, resourceId: 2, from: 13 * 60, to: 14 * 60, title: "Staff Meeting", date: d(2) }],
+        disableIntervals: [{ resourceId: 2, from: 7 * 60, to: 8 * 60, date: d(3) }],
     },
     {
         id: 3,
@@ -104,7 +116,7 @@ export const resourceData = [
                 to: 12 * 60,
                 title: "Sports Massage",
                 meta: { status: 1, preferred: true, note: "Repeat client — shoulder strain recovery." },
-                date: "2025-11-08",
+                date: d(4),
             },
             {
                 id: 303,
@@ -113,7 +125,7 @@ export const resourceData = [
                 to: 12 * 60 + 30,
                 title: "Trigger Point Therapy",
                 meta: { status: 3, preferred: false, note: "Overlaps lunch slightly." },
-                date: "2025-11-09",
+                date: d(5),
             },
             {
                 id: 302,
@@ -122,12 +134,10 @@ export const resourceData = [
                 to: 15 * 60,
                 title: "Deep Tissue Massage",
                 meta: { status: 5, preferred: false, note: "Requested deeper pressure than usual." },
-                date: "2025-11-10",
+                date: d(6),
             },
         ],
-        disabledBlocks: [
-            { id: 3001, resourceId: 3, from: 12 * 60, to: 13 * 60, title: "Lunch", date: "2025-11-04" },
-        ],
+        disabledBlocks: [{ id: 3001, resourceId: 3, from: 12 * 60, to: 13 * 60, title: "Lunch", date: d(0) }],
         disableIntervals: [],
     },
     {
@@ -143,7 +153,7 @@ export const resourceData = [
                 title: "Nutrition Plan Review",
                 description: "Discuss dietary adjustments",
                 meta: { status: 4, preferred: true, note: "Client transitioning to a new macro plan." },
-                date: "2025-11-05",
+                date: d(1),
             },
             {
                 id: 402,
@@ -153,13 +163,11 @@ export const resourceData = [
                 title: "Supplement Consultation",
                 description: "Overlap to test scheduler",
                 meta: { status: 2, preferred: false, note: "Partial overlap intended." },
-                date: "2025-11-06",
+                date: d(2),
             },
         ],
         disabledBlocks: [],
-        disableIntervals: [
-            { resourceId: 4, from: 18 * 60, to: 24 * 60, date: "2025-11-07" },
-        ],
+        disableIntervals: [{ resourceId: 4, from: 18 * 60, to: 24 * 60, date: d(3) }],
     },
     {
         id: 5,
@@ -174,7 +182,7 @@ export const resourceData = [
                 title: "Evening Yoga",
                 description: "Beginner-level class",
                 meta: { status: 2, preferred: true, note: "Full class expected; ensure space availability." },
-                date: "2025-11-08",
+                date: d(4),
             },
             {
                 id: 502,
@@ -184,11 +192,11 @@ export const resourceData = [
                 title: "One-on-One Yoga Intro",
                 description: "Intentional overlap with group class",
                 meta: { status: 3, preferred: false, note: "Short overlapping session." },
-                date: "2025-11-09",
+                date: d(5),
             },
         ],
         disabledBlocks: [
-            { id: 5001, resourceId: 5, from: 12 * 60 + 30, to: 13 * 60 + 30, title: "Lunch Break", date: "2025-11-10" },
+            { id: 5001, resourceId: 5, from: 12 * 60 + 30, to: 13 * 60 + 30, title: "Lunch Break", date: d(6) },
         ],
         disableIntervals: [],
     },
@@ -205,7 +213,7 @@ export const resourceData = [
                 title: "Pilates Session",
                 description: "Core stability focus",
                 meta: { status: 3, preferred: true, note: "Client recovering from lower back pain." },
-                date: "2025-11-04",
+                date: d(0),
             },
             {
                 id: 602,
@@ -215,7 +223,7 @@ export const resourceData = [
                 title: "Reformer Intro",
                 description: "Overlap to simulate double-booking",
                 meta: { status: 5, preferred: false, note: "New client; may reschedule." },
-                date: "2025-11-05",
+                date: d(1),
             },
             {
                 id: 603,
@@ -224,15 +232,11 @@ export const resourceData = [
                 to: 17 * 60 + 30,
                 title: "Injury Prevention Workshop",
                 meta: { status: 4, preferred: true, note: "Team session; room booking required." },
-                date: "2025-11-06",
+                date: d(2),
             },
         ],
-        disabledBlocks: [
-            { id: 6001, resourceId: 6, from: 12 * 60, to: 12 * 60 + 30, title: "Break", date: "2025-11-07" },
-        ],
-        disableIntervals: [
-            { resourceId: 6, from: 19 * 60, to: 24 * 60, date: "2025-11-08" },
-        ],
+        disabledBlocks: [{ id: 6001, resourceId: 6, from: 12 * 60, to: 12 * 60 + 30, title: "Break", date: d(3) }],
+        disableIntervals: [{ resourceId: 6, from: 19 * 60, to: 24 * 60, date: d(4) }],
     },
     {
         id: 7,
@@ -246,7 +250,7 @@ export const resourceData = [
                 to: 11 * 60,
                 title: "Strength Screening",
                 meta: { status: 2, preferred: true, note: "Baseline measurements." },
-                date: "2025-11-09",
+                date: d(5),
             },
             {
                 id: 702,
@@ -255,7 +259,7 @@ export const resourceData = [
                 to: 12 * 60,
                 title: "Kettlebell Clinic",
                 meta: { status: 5, preferred: false, note: "Overlaps screening; conflict edge case." },
-                date: "2025-11-10",
+                date: d(6),
             },
             {
                 id: 703,
@@ -264,14 +268,10 @@ export const resourceData = [
                 to: 12 * 60 + 30,
                 title: "Functional Movement Test",
                 meta: { status: 1, preferred: false, note: "Second overlap creating a chain." },
-                date: "2025-11-04",
+                date: d(0),
             },
         ],
-        disabledBlocks: [
-            { id: 7001, resourceId: 7, from: 13 * 60, to: 13 * 60 + 30, title: "Admin Time", date: "2025-11-05" },
-        ],
-        disableIntervals: [
-            { resourceId: 7, from: 18 * 60, to: 24 * 60, date: "2025-11-06" },
-        ],
+        disabledBlocks: [{ id: 7001, resourceId: 7, from: 13 * 60, to: 13 * 60 + 30, title: "Admin Time", date: d(1) }],
+        disableIntervals: [{ resourceId: 7, from: 18 * 60, to: 24 * 60, date: d(2) }],
     },
 ];

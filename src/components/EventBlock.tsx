@@ -60,8 +60,8 @@ const EventBlock: React.FC<EventBlockProps> = React.memo(({
     const dynamicStyle = {
         top: eventTop + 2,
         height: eventHeight < hourHeight / 4 ? eventHeight : eventHeight - 4,
-        left: frame.leftPx,
-        width: frame.widthPx,
+        left: frame.leftPx + 1,
+        width: frame.widthPx - 3,
         zIndex: frame.zIndex,
         opacity: selectedAppointment ? 0.5 : 1,
         borderWidth: selected ? 2 : 1,

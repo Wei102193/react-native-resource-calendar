@@ -33,8 +33,8 @@ export const DaysComponent = ({onResourcePress, activeResourceId, mode, date, AP
     );
 
     return (
-        <Row>
-            <Col style={{width: TIME_LABEL_WIDTH, alignItems: "center", paddingVertical: 4}}>
+        <Row style={{paddingVertical: 4}}>
+            <Col style={{width: TIME_LABEL_WIDTH, alignItems: "center", justifyContent: "center"}}>
                 <StaffAvatar
                     onPress={() => {
                         if (onResourcePress)
@@ -61,8 +61,8 @@ export const DaysComponent = ({onResourcePress, activeResourceId, mode, date, AP
                             key={i}>
                             <Center style={{
                                 backgroundColor: selected ? "#4d959c" : undefined,
-                                width: 30,
-                                height: 30,
+                                width: Math.min(30, APPOINTMENT_BLOCK_WIDTH - 8),
+                                height: Math.min(30, APPOINTMENT_BLOCK_WIDTH - 8),
                                 borderRadius: 999,
                             }}>
                                 <Text style={{

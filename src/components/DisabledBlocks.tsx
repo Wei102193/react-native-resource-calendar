@@ -61,9 +61,9 @@ const DisabledBlockComponent: React.FC<DisabledBlockComponentProps> = ({
     const dynamicStyle = {
         backgroundColor: "#d3d3d3",
         top: top + 2,
+        left: layout.leftPx + 1,
         height: height < hourHeight / 4 ? height : height - 4,
-        width: layout.widthPx,
-        left: layout.leftPx,
+        width: layout.widthPx - 3,
         borderWidth: 1,
         borderColor: "rgba(0,0,0,0.12)",
     };
