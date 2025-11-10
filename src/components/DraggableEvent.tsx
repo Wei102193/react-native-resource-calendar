@@ -37,7 +37,7 @@ export const DraggableEvent = ({
     const dynamicStyle = useAnimatedStyle(() => {
         return {
             height: eventHeight.value < hourHeight / 4 ? eventHeight.value : eventHeight.value - 4,
-            width: APPOINTMENT_BLOCK_WIDTH,
+            width: APPOINTMENT_BLOCK_WIDTH - 3,
             borderWidth: 1,
             borderColor: "rgba(0,0,0,0.12)",
         }
@@ -64,7 +64,7 @@ export const DraggableEvent = ({
                     translateY: panYAbs.value - (eventHeight.value / 2) + 2,
                 },
                 {
-                    translateX: panXAbs.value - (APPOINTMENT_BLOCK_WIDTH / 2),
+                    translateX: panXAbs.value - (APPOINTMENT_BLOCK_WIDTH / 2) + 1,
                 },
             ],
         };
