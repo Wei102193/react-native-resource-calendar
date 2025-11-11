@@ -725,7 +725,7 @@ const CalendarInner: React.FC<CalendarProps> = (props) => {
                             scrollEnabled={false}
                         >
                             <ResourcesComponent
-                                date={dateRef.current}
+                                date={date}
                                 resourceIds={resourceIds}
                                 APPOINTMENT_BLOCK_WIDTH={APPOINTMENT_BLOCK_WIDTH}
                                 onResourcePress={onResourcePress}
