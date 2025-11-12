@@ -1,6 +1,6 @@
 // @flow
 import * as React from 'react';
-import {useEffect, useState} from 'react';
+import {useEffect, useRef, useState} from 'react';
 import {InteractionManager, StyleSheet, Text, View} from "react-native";
 import {
     getCurrentTimeInMinutes,
@@ -61,18 +61,33 @@ export const TimeLabels = React.forwardRef(({
         return () => clearInterval(intervalId);
     }, [timezone]);
 
+    const lastScrolledDateRef = useRef<any>(null); // store a key for the last date we scrolled to
+
     useEffect(() => {
-        // Ensure scroll happens after the interactions (i.e., after rendering)
+        if (!layout) return;
+
+        // If `date` is a Date object, use getTime() or toDateString()
+        const dateKey = date.getTime();
+
+        // If we already scrolled for this date, skip
+        if (lastScrolledDateRef.current === dateKey) return;
+
         InteractionManager.runAfterInteractions(() => {
-            let pos = isToday ? currentTimeYPosition - 240 : timeToYPosition(startMinutes, hourHeight); // Offset by 240px to give a little margin above the red line
+            let pos = isToday
+                ? currentTimeYPosition - 240
+                : timeToYPosition(startMinutes, hourHeight);
+
             if (ref.current) {
                 ref.current.scrollTo({
-                    y: Math.round((pos) / APPOINTMENT_BLOCK_HEIGHT) * APPOINTMENT_BLOCK_HEIGHT, // Offset by 240px to give a little margin above the red line
+                    y: Math.round(pos / APPOINTMENT_BLOCK_HEIGHT) * APPOINTMENT_BLOCK_HEIGHT,
                     animated: true,
                 });
+
+                // Remember that we've scrolled for this specific date
+                lastScrolledDateRef.current = dateKey;
             }
         });
-    }, [date, isToday, APPOINTMENT_BLOCK_HEIGHT, startMinutes, hourHeight]); // Ensure this effect runs when currentTimeYPosition is updated
+    }, [layout, date, isToday, APPOINTMENT_BLOCK_HEIGHT, startMinutes, hourHeight, currentTimeYPosition]);
 
     return (
         <>
