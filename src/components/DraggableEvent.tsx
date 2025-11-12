@@ -102,14 +102,14 @@ export const DraggableEvent = ({
                     editable={false}
                     allowFontScaling={false}
                     underlineColorAndroid="transparent" // Disables underline on Android
-                    style={{
+                    style={[{
                         width: "100%",
                         fontFamily: timeFace,
                         fontSize: getTextSize(hourHeight),
                         pointerEvents: "none",
                         padding: 0,
                         margin: 0,
-                    }}
+                    }, resolved?.time]}
                     defaultValue={initialDisplayTime}
                     animatedProps={animatedTimeProps}
                 />

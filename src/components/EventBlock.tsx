@@ -7,6 +7,7 @@ import {Event, EventRenderContext} from "@/types/calendarTypes";
 import {EventFrame, getTextSize, minutesToTime, scalePosition} from "@/utilities/helpers";
 import {useCalendarBinding} from "@/store/bindings/BindingProvider";
 import {useResolvedFont} from "@/theme/ThemeContext";
+import {StyleProp} from "react-native/Libraries/StyleSheet/StyleSheet";
 
 export type EventSlots = {
     // TopLeft?: React.ComponentType<{ event: Event; ctx: EventRenderContext }>;
@@ -19,6 +20,7 @@ export type EventRenderer = (
 ) => React.ReactNode;
 
 export type StyleOverrides = Partial<{
+    time: StyleProp<TextStyle>;
     container: ViewStyle;
     content: ViewStyle;
     title: TextStyle;
@@ -107,14 +109,14 @@ const EventBlock: React.FC<EventBlockProps> = React.memo(({
                     editable={false}
                     allowFontScaling={false}
                     underlineColorAndroid="transparent" // Disables underline on Android
-                    style={{
+                    style={[{
                         width: "100%",
                         fontFamily: timeFace,
                         fontSize: getTextSize(hourHeight),
                         pointerEvents: "none",
                         padding: 0,
                         margin: 0,
-                    }}
+                    }, resolved?.time]}
                     defaultValue={`${start} - ${end}`}
                 />
 

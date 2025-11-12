@@ -71,7 +71,7 @@ export default function HomeScreen() {
 
     const eventStyleOverrides = (event: Event) => {
         const bg = statusColor(event.meta?.status)
-        return {container: {backgroundColor: bg}};
+        return {container: {backgroundColor: bg}, time: {color: "black"}};
     };
 
     const randomPropsGenerator = () => {
