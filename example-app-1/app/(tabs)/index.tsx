@@ -29,7 +29,6 @@ export default function HomeScreen() {
                 const {event, from, to, resourceId, date} = draft;
 
                 return prev.map((res: any) => {
-                    // ✅ if this is the new target resource
                     if (res.id === resourceId) {
                         // was the event originally in a different resource?
                         const wasDifferentResource = event.resourceId !== resourceId;
@@ -53,7 +52,6 @@ export default function HomeScreen() {
                         };
                     }
 
-                    // ✅ if this is the old resource and event moved away
                     if (res.id === event.resourceId && event.resourceId !== resourceId) {
                         return {
                             ...res,
@@ -61,7 +59,6 @@ export default function HomeScreen() {
                         };
                     }
 
-                    // ✅ untouched resources
                     return res;
                 });
             });

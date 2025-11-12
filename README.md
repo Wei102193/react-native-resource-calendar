@@ -102,7 +102,6 @@ export default function App() {
                 const {event, from, to, resourceId, date} = draft;
 
                 return prev.map((res: any) => {
-                    // ✅ if this is the new target resource
                     if (res.id === resourceId) {
                         // was the event originally in a different resource?
                         const wasDifferentResource = event.resourceId !== resourceId;
@@ -126,7 +125,6 @@ export default function App() {
                         };
                     }
 
-                    // ✅ if this is the old resource and event moved away
                     if (res.id === event.resourceId && event.resourceId !== resourceId) {
                         return {
                             ...res,
@@ -134,7 +132,6 @@ export default function App() {
                         };
                     }
 
-                    // ✅ untouched resources
                     return res;
                 });
             });
@@ -144,7 +141,7 @@ export default function App() {
 
     const eventStyleOverrides = (event: Event) => {
         const bg = statusColor(event.meta?.status)
-        return {container: {backgroundColor: bg}};
+        return {container: {backgroundColor: bg}, time: {color: "black"}};
     };
 
     const randomPropsGenerator = () => {
