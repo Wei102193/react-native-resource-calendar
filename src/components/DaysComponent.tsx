@@ -58,7 +58,7 @@ export const DaysComponent = ({onResourcePress, activeResourceId, mode, date, AP
                                 width: APPOINTMENT_BLOCK_WIDTH,
                             }}
                             space={4}
-                            key={i}>
+                            key={d.toString()}>
                             <Center style={{
                                 backgroundColor: selected ? "#4d959c" : undefined,
                                 width: Math.min(30, APPOINTMENT_BLOCK_WIDTH - 8),
