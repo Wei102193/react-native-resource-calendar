@@ -263,9 +263,9 @@ export function computeStackedEventLayout(
     events: ReadonlyArray<Event>,
     containerWidthPx: number,
     {
-        indentPx = 12,        // how much to nudge each overlap to the right
+        indentPx = 6,        // how much to nudge each overlap to the right
         rightPadPx = 0,       // visual breathing room on the right
-        minWidthPx = 30,      // never let an event become thinner than this
+        minWidthPx = 25,      // never let an event become thinner than this
         capIndentLevels = 4,  // after N levels, stop indenting (just stack via z-index)
     }: {
         indentPx?: number;

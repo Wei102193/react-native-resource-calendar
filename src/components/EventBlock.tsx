@@ -1,8 +1,7 @@
 import React from "react";
-import {StyleSheet, Text, TextInput, TextStyle, TouchableOpacity, View, ViewStyle} from "react-native";
+import {StyleSheet, Text, TextInput, TextStyle, TouchableOpacity, ViewStyle} from "react-native";
 import Row from "../components/common/layout/Row";
 import Col from "../components/common/layout/Col";
-import Hidden from "../components/common/layout/Hidden";
 import {Event, EventRenderContext} from "@/types/calendarTypes";
 import {EventFrame, getTextSize, minutesToTime, scalePosition} from "@/utilities/helpers";
 import {useCalendarBinding} from "@/store/bindings/BindingProvider";
@@ -65,7 +64,7 @@ const EventBlock: React.FC<EventBlockProps> = React.memo(({
         left: frame.leftPx + 1,
         width: frame.widthPx - 3,
         zIndex: frame.zIndex,
-        opacity: selectedAppointment ? 0.5 : 1,
+        opacity: selectedAppointment || disabled ? 0.5 : 1,
         borderWidth: selected ? 2 : 1,
         borderColor: selected ? "#4d959c" : "rgba(0,0,0,0.12)",
     };
@@ -94,16 +93,6 @@ const EventBlock: React.FC<EventBlockProps> = React.memo(({
                 onLongPress && onLongPress(event);
             }}
         >
-            <Hidden isHidden={!disabled}>
-                <View style={{
-                    position: 'absolute',
-                    top: 0,
-                    width: "150%",
-                    height: '150%',
-                    zIndex: 1,
-                    backgroundColor: "rgba(255, 255, 255, 0.5)"
-                }}/>
-            </Hidden>
             <Col style={[{position: "relative"}, resolved?.content]}>
                 <TextInput
                     editable={false}
