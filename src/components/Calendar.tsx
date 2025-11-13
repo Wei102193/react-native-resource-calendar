@@ -211,8 +211,9 @@ const CalendarInner: React.FC<CalendarProps> = (props) => {
     useEffect(() => {
         if (!selectedEvent) {
             setDraggedEventDraft(null);
+            setDragReady(false)
         }
-    }, [selectedEvent]);
+    }, [selectedEvent, setSelectedEvent, setDraggedEventDraft]);
 
     useEffect(() => {
         scrollX.value = 0;
@@ -224,6 +225,7 @@ const CalendarInner: React.FC<CalendarProps> = (props) => {
     const flashListRef = useRef<FlashList<any>>(null);
     const prevResourceIdsRef = useRef<(number)[]>([]);
     const [layout, setLayout] = useState<Layout | null>(null);
+    const [dragReady, setDragReady] = useState(false);
 
     const dateRef = useRef(date); // Store `date` in a ref to prevent re-renders
 
@@ -588,6 +590,8 @@ const CalendarInner: React.FC<CalendarProps> = (props) => {
             lastHapticScrollY.value = scrollY.value;
             eventHeight.value = initialHeight;
             setSelectedEvent(event);
+            // 4) now allow React to mount the overlay next tick
+            requestAnimationFrame(() => setDragReady(true));
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
         };
     }, []); // runs once; reads fresh values via refs
@@ -627,8 +631,10 @@ const CalendarInner: React.FC<CalendarProps> = (props) => {
 
     useEffect(() => {
         const handleOrientationChange = () => {
-            if (selectedEvent)
+            if (selectedEvent) {
                 setSelectedEvent(null);
+                setDragReady(false);
+            }
         };
 
         const subscription = Dimensions.addEventListener('change', handleOrientationChange);
@@ -636,7 +642,7 @@ const CalendarInner: React.FC<CalendarProps> = (props) => {
         return () => {
             subscription.remove();
         };
-    }, [setSelectedEvent, selectedEvent]);
+    }, [setSelectedEvent, selectedEvent, setDragReady]);
 
     useEffect(() => {
         dateRef.current = date; // Update the ref whenever date prop changes
@@ -796,7 +802,7 @@ const CalendarInner: React.FC<CalendarProps> = (props) => {
                         />
                     </Animated.ScrollView>
                     {
-                        selectedEvent &&
+                        selectedEvent && dragReady &&
                         <DraggableEvent
                             selectedEvent={selectedEvent}
                             APPOINTMENT_BLOCK_WIDTH={APPOINTMENT_BLOCK_WIDTH}
