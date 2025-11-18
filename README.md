@@ -42,8 +42,7 @@ react-native-gesture-handler \
 react-native-reanimated \
 react-native-svg \
 @shopify/flash-list \
-@shopify/react-native-skia \
-expo-haptics
+@shopify/react-native-skia 
 ```
 
 If you’re using bare React Native (not Expo), install them manually:
@@ -54,8 +53,18 @@ react-native-gesture-handler \
 react-native-reanimated \
 react-native-svg \
 @shopify/flash-list \
-@shopify/react-native-skia \
-expo-haptics
+@shopify/react-native-skia 
+```
+
+🟦 Optional: Haptics Support (Expo Only)
+
+Haptic feedback is optional.
+If you want to enable vibration feedback when interacting with components, install the Expo Haptics package and set enableHapticFeedback to true in your component config.
+
+📦 Install (Expo)
+
+```bash
+npx expo install expo-haptics
 ```
 
 ---
@@ -264,12 +273,14 @@ The `Calendar` component accepts a flexible set of props for customizing layout,
 | **`snapIntervalInMinutes`** | `number`                                                                                                         | `5`                     | Drag/resize snapping granularity (in minutes).                                                                                                          |
 | **`overLappingLayoutMode`** | `LayoutMode` (`'stacked' \| 'columns'`)                                                                          | `'stacked'`             | Strategy to lay out overlapping events inside a column.                                                                                                 |
 | **`theme`**                 | `CalendarTheme`                                                                                                  | —                       | Typography & palette overrides.                                                                                                                         |
+| **`enableHapticFeedback`**  | `boolean`                                                                                                        | `false`                 | Enable haptic feedback.                                                                                                                                 |
 | **`eventSlots`**            | `EventSlots`                                                                                                     | —                       | Slot renderers to customize event content (e.g. `{ Body, TopRight }`).                                                                                  |
 | **`eventStyleOverrides`**   | `StyleOverrides \| ((event: Event) => StyleOverrides \| undefined)`                                              | —                       | Per-event style override (object or function).                                                                                                          |
 | **`isEventSelected`**       | `(event: Event) => boolean`                                                                                      | `() => false`           | Marks which events are currently selected.                                                                                                              |
 | **`isEventDisabled`**       | `(event: Event) => boolean`                                                                                      | `() => false`           | Marks events as disabled (non-interactive).                                                                                                             |
 | **`onResourcePress`**       | `(resource: Resource) => void`                                                                                   | —                       | Invoked when a resource header is pressed.                                                                                                              |
 | **`onBlockLongPress`**      | `(resource: Resource, date: Date) => void`                                                                       | —                       | Long-press on an empty block (grid).                                                                                                                    |
+| **`onBlockTap`**            | `(resource: Resource, date: Date) => void`                                                                       | —                       | Tap on an empty block (grid).                                                                                                                           |
 | **`onDisabledBlockPress`**  | `(block: DisabledBlock) => void`                                                                                 | —                       | Tap on a disabled block (e.g., lunch).                                                                                                                  |
 | **`onEventPress`**          | `(event: Event) => void`                                                                                         | —                       | Tap on an event.                                                                                                                                        |
 | **`onEventLongPress`**      | `(event: Event) => void`                                                                                         | —                       | Long-press on an event. The calendar also preps internal drag state here.                                                                               |
