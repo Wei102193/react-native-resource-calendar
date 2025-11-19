@@ -11,7 +11,6 @@ import Animated, {
 } from "react-native-reanimated";
 import {Dimensions, LayoutChangeEvent, Platform, StyleSheet, useWindowDimensions, View} from "react-native";
 import {FlashList, FlashListRef} from "@shopify/flash-list";
-import * as Haptics from "expo-haptics";
 import {
     combineDateAndTime,
     findDayIndexFor,
@@ -47,6 +46,12 @@ type FlagFn = (event: Event) => boolean;
 type Column =
     | { kind: 'resource'; resourceId: number }
     | { kind: 'day'; dayIndex: number; dayDate: Date };
+type HapticStyle =
+    | "Light"
+    | "Medium"
+    | "Heavy"
+    | "Rigid"
+    | "Soft";
 
 interface CalendarProps {
     timezone?: string;
@@ -64,9 +69,11 @@ interface CalendarProps {
 
     onResourcePress?: (resource: Resource) => void;
     onBlockLongPress?: (resource: Resource, date: Date) => void;
+    onBlockTap?: (resource: Resource, date: Date) => void;
     onDisabledBlockPress?: (block: DisabledBlock) => void;
     onEventPress?: (event: Event) => void;
     onEventLongPress?: (event: Event) => void;
+    enableHapticFeedback?: boolean;
     eventSlots?: EventSlots;
     eventStyleOverrides?:
         | StyleOverrides
@@ -105,9 +112,11 @@ const CalendarInner: React.FC<CalendarProps> = (props) => {
         resources,
         onResourcePress,
         onBlockLongPress,
+        onBlockTap,
         onEventPress,
         onEventLongPress,
         onDisabledBlockPress,
+        enableHapticFeedback = false,
         eventSlots,
         eventStyleOverrides,
         overLappingLayoutMode = 'stacked',
@@ -248,9 +257,22 @@ const CalendarInner: React.FC<CalendarProps> = (props) => {
     const startedY = useSharedValue(0);
     const touchY = useSharedValue(0); // NEW
 
-    const triggerHaptic = useCallback(() => {
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    }, []);
+    const triggerHaptic = useCallback(
+        async (style: HapticStyle = "Light") => {
+            try {
+                const Haptics = await import("expo-haptics");
+
+                const feedbackStyle = Haptics.ImpactFeedbackStyle[style];
+
+                if (enableHapticFeedback)
+                    await Haptics.impactAsync(feedbackStyle);
+            } catch (e) {
+                // expo-haptics not installed → ignore
+                console.log("Haptics not available, skipping...");
+            }
+        },
+        [enableHapticFeedback]
+    );
 
     const resourceIds = useMemo(() => {
         const ids = resources?.map(item => item?.id) || [];
@@ -487,7 +509,7 @@ const CalendarInner: React.FC<CalendarProps> = (props) => {
             // Use the Reanimated scrollTo function to jump to the next column
             scheduleOnRN(scrollListTo, newScrollX);
             // Trigger a haptic on each scroll jump
-            scheduleOnRN(Haptics.impactAsync, Haptics.ImpactFeedbackStyle.Medium);
+            scheduleOnRN(triggerHaptic)("Medium");
         }
     });
 
@@ -539,7 +561,7 @@ const CalendarInner: React.FC<CalendarProps> = (props) => {
         if (scrollDiff >= snapInterval) {
             // Update the last position to the current position
             lastHapticScrollY.value = newScrollY;
-            scheduleOnRN(Haptics.impactAsync, Haptics.ImpactFeedbackStyle.Medium);
+            scheduleOnRN(triggerHaptic)("Medium");
         }
     });
 
@@ -592,7 +614,7 @@ const CalendarInner: React.FC<CalendarProps> = (props) => {
             setSelectedEvent(event);
             // 4) now allow React to mount the overlay next tick
             requestAnimationFrame(() => setDragReady(true));
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+            triggerHaptic("Medium");
         };
     }, []); // runs once; reads fresh values via refs
 
@@ -621,13 +643,21 @@ const CalendarInner: React.FC<CalendarProps> = (props) => {
         },
     });
 
-    const handleBlockPress = useCallback((resourceId: number, time: string) => {
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    const handleBlockLongPress = useCallback((resourceId: number, time: string) => {
+        triggerHaptic("Medium");
         const resource = resources.find(r => r.id === resourceId);
 
         if (onBlockLongPress)
             onBlockLongPress(resource!, new Date(time))
     }, [resources, onBlockLongPress]);
+
+    const handleBlockPress = useCallback((resourceId: number, time: string) => {
+        triggerHaptic("Medium");
+        const resource = resources.find(r => r.id === resourceId);
+
+        if (onBlockTap)
+            onBlockTap(resource!, new Date(time))
+    }, [resources, onBlockTap]);
 
     useEffect(() => {
         const handleOrientationChange = () => {
@@ -666,6 +696,7 @@ const CalendarInner: React.FC<CalendarProps> = (props) => {
                         hourHeight={hourHeight}
                         APPOINTMENT_BLOCK_WIDTH={APPOINTMENT_BLOCK_WIDTH}
                         handleBlockPress={(time) => handleBlockPress(rid, combineDateAndTime(dayDate ?? dateRef.current, time))}
+                        handleBlockLongPress={(time) => handleBlockLongPress(rid, combineDateAndTime(dayDate ?? dateRef.current, time))}
                     />
                     <DisabledIntervals
                         id={rid!}

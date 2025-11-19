@@ -106,7 +106,10 @@ export default function HomeScreen() {
                 eventStyleOverrides={eventStyleOverrides}
                 overLappingLayoutMode={layoutMode}
                 onBlockLongPress={(resource, date) => {
-                    console.log(resource, date)
+                    console.log("onBlockLongPress",resource, date)
+                }}
+                onBlockTap={(resource, date) => {
+                    console.log("onBlockTap",resource, date)
                 }}
             />
             {

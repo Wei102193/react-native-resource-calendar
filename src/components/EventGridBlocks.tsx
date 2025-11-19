@@ -7,12 +7,14 @@ import {runOnJS} from 'react-native-reanimated';
 
 type Props = {
     handleBlockPress: (time: string) => void;
+    handleBlockLongPress: (time: string) => void;
     APPOINTMENT_BLOCK_WIDTH: number;
     hourHeight: number;
 };
 
 export const EventGridBlocksSkia: React.FC<Props> = ({
                                                          handleBlockPress,
+                                                         handleBlockLongPress,
                                                          hourHeight,
                                                          APPOINTMENT_BLOCK_WIDTH
                                                      }) => {
@@ -62,6 +64,17 @@ export const EventGridBlocksSkia: React.FC<Props> = ({
         [handleBlockPress, timeLabels]
     );
 
+    const onSlotLongPress = React.useCallback(
+        (row: number) => {
+            setPressedRow(null);
+            const slot = timeLabels[row];
+            if (slot) {
+                handleBlockLongPress(slot)
+            }
+        },
+        [timeLabels, handleBlockLongPress]
+    );
+
     const onPressBegin = React.useCallback((row: number) => {
         setPressedRow(row);
     }, []);
@@ -74,17 +87,42 @@ export const EventGridBlocksSkia: React.FC<Props> = ({
             'worklet';
             runOnJS(onPressBegin)(Math.floor(e.y / rowHeight))
         })
+        .onTouchesUp(() => {
+            'worklet';
+            runOnJS(onTouchesUp)()
+        })
         .onEnd((e) => {
             'worklet';
-            runOnJS(onSlotPress)(Math.floor(e.y / rowHeight))
+            runOnJS(onSlotLongPress)(Math.floor(e.y / rowHeight))
         })
         .onFinalize(() => {
             'worklet';
             runOnJS(onTouchesUp)()
         });
 
+    const tapGesture = Gesture.Tap()
+        .onBegin((e) => {
+            'worklet';
+            runOnJS(onPressBegin)(Math.floor(e.y / rowHeight))
+        })
+        .onEnd((e) => {
+            'worklet';
+            runOnJS(onSlotPress)(Math.floor(e.y / rowHeight))
+        })
+        .onTouchesUp(() => {
+            'worklet';
+            runOnJS(onTouchesUp)()
+        })
+        .onFinalize(() => {
+            'worklet';
+            runOnJS(onTouchesUp)()
+        });
+
+    // Whichever activates first (tap vs long press) wins
+    const composedGesture = Gesture.Race(longPressGesture, tapGesture);
+
     return (
-        <GestureDetector gesture={longPressGesture}>
+        <GestureDetector gesture={composedGesture}>
             <View>
                 {/* First half-day segment */}
                 <Canvas style={{width: APPOINTMENT_BLOCK_WIDTH, height: segmentHeight}}>
