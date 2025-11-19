@@ -10,8 +10,6 @@ Expo compatibility.
 - ✅ Multi-resource/multi-days timeline layout
 - 🎨 Customizable event slots (Body, TopRight)
 - 📱 Smooth Reanimated drag-and-drop
-- 🧩 Modular store (Zustand binding by default)
-- 🖌️ Theme support (font families, weights)
 - 🪶 Lightweight and Expo-ready
 
 ---
