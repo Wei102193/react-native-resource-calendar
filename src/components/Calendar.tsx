@@ -2,7 +2,6 @@ import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {Gesture, GestureDetector} from "react-native-gesture-handler";
 import Animated, {
     runOnJS,
-    runOnUI,
     scrollTo,
     useAnimatedRef,
     useAnimatedScrollHandler,
@@ -16,11 +15,9 @@ import {
     combineDateAndTime,
     findDayIndexFor,
     findResourceIndexFor,
-    getCurrentTimeInMinutes,
     positionToMinutes,
     scalePosition,
-    TIME_LABEL_WIDTH,
-    timeToYPosition
+    TIME_LABEL_WIDTH
 } from '@/utilities/helpers';
 import {TimeLabels} from './TimeLabels';
 import {ResourcesComponent} from "./ResourcesComponent";
@@ -43,7 +40,7 @@ import {DraggableEvent} from "@/components/DraggableEvent";
 import {CalendarThemeProvider} from "@/theme/ThemeContext";
 import EventBlocks from "@/components/EventBlocks";
 import {DaysComponent} from "@/components/DaysComponent";
-import {addDays, format, isSameDay} from 'date-fns';
+import {addDays, format} from 'date-fns';
 
 type FlagFn = (event: Event) => boolean;
 type Column =
@@ -108,7 +105,7 @@ const CalendarInner: React.FC<CalendarProps> = (props) => {
     const {
         date,
         numberOfColumns: numberOfColumnsProp = 3,
-        startMinutes = 0,
+        startMinutes,
         hourHeight = 120,
         snapIntervalInMinutes = 5,
         timezone = Intl?.DateTimeFormat()?.resolvedOptions()?.timeZone,
@@ -680,31 +677,6 @@ const CalendarInner: React.FC<CalendarProps> = (props) => {
     useEffect(() => {
         dateRef.current = date; // Update the ref whenever date prop changes
     }, [date]);
-
-    const lastScrolledDateRef = useRef<any>(null);
-
-    useEffect(() => {
-        if (!layout) return;
-        const isToday = isSameDay(new Date(), date);
-        const APPOINTMENT_BLOCK_HEIGHT = hourHeight / 4;
-        // If `date` is a Date object, use getTime() or toDateString()
-        const dateKey = date.getTime();
-        const currentTimeYPosition = timeToYPosition(getCurrentTimeInMinutes(timezone), hourHeight);
-
-        // If we already scrolled for this date, skip
-        if (lastScrolledDateRef.current === dateKey) return;
-
-        let pos = isToday
-            ? currentTimeYPosition - 240
-            : timeToYPosition(startMinutes, hourHeight);
-        const y = Math.round(pos / APPOINTMENT_BLOCK_HEIGHT) * APPOINTMENT_BLOCK_HEIGHT;
-        runOnUI((yVal: number) => {
-            "worklet";
-            scrollTo(verticalScrollViewRef, 0, yVal, true);
-        })(y);
-        // Remember that we've scrolled for ¬this specific date
-        lastScrolledDateRef.current = dateKey;
-    }, [layout, date, startMinutes, hourHeight]);
 
     const renderItem = useCallback(({item, index}: any) => {
         // Resolve which date & resource this column represents:

@@ -1,7 +1,7 @@
 // @flow
 import * as React from 'react';
-import {useEffect, useState} from 'react';
-import {StyleSheet, Text, View} from "react-native";
+import {useEffect, useRef, useState} from 'react';
+import {InteractionManager, StyleSheet, Text, View} from "react-native";
 import {
     getCurrentTimeInMinutes,
     getTextSize,
@@ -36,6 +36,7 @@ export const TimeLabels = React.forwardRef(({
     // State to store the current Y-position of the red line
     const [currentTimeYPosition, setCurrentTimeYPosition] = useState(timeToYPosition(getCurrentTimeInMinutes(timezone), hourHeight));
     const [currentTime, setCurrentTime] = useState<string>(format(toZonedTime(new Date(), timezone), 'h:mm'));
+    const APPOINTMENT_BLOCK_HEIGHT = hourHeight / 4;
 
     const updateCurrentTimeYPosition = () => {
         setCurrentTimeYPosition(timeToYPosition(getCurrentTimeInMinutes(timezone), hourHeight));
@@ -59,6 +60,34 @@ export const TimeLabels = React.forwardRef(({
 
         return () => clearInterval(intervalId);
     }, [timezone]);
+
+    const lastScrolledDateRef = useRef<any>(null); // store a key for the last date we scrolled to
+
+    useEffect(() => {
+        if (!layout) return;
+
+        // If `date` is a Date object, use getTime() or toDateString()
+        const dateKey = date.getTime();
+
+        // If we already scrolled for this date, skip
+        if (lastScrolledDateRef.current === dateKey) return;
+
+        InteractionManager.runAfterInteractions(() => {
+            let pos = isToday
+                ? currentTimeYPosition - 240
+                : timeToYPosition(startMinutes, hourHeight);
+
+            if (ref.current) {
+                ref.current.scrollTo({
+                    y: Math.round(pos / APPOINTMENT_BLOCK_HEIGHT) * APPOINTMENT_BLOCK_HEIGHT,
+                    animated: true,
+                });
+
+                // Remember that we've scrolled for this specific date
+                lastScrolledDateRef.current = dateKey;
+            }
+        });
+    }, [layout, date, isToday, APPOINTMENT_BLOCK_HEIGHT, startMinutes, hourHeight, currentTimeYPosition]);
 
     return (
         <>
