@@ -226,7 +226,7 @@ const CalendarInner: React.FC<CalendarProps> = (props) => {
 
     useEffect(() => {
         scrollX.value = 0;
-    }, [mode]);
+    }, [mode, numberOfColumns]);
 
     const verticalScrollViewRef = useAnimatedRef<Animated.ScrollView>();
     const headerScrollViewRef = useAnimatedRef<Animated.ScrollView>();
@@ -746,7 +746,7 @@ const CalendarInner: React.FC<CalendarProps> = (props) => {
         <StoreFeeder resources={resources} store={binding} baseDate={date}/>
         <View style={{flex: 1}}>
             {
-                !isMultiDay ? <View>
+                !isMultiDay ? <View key={`header-${numberOfColumns}-${width}`}>
                         <Animated.ScrollView
                             style={{backgroundColor: "white"}}
                             showsHorizontalScrollIndicator={false}

@@ -109,6 +109,7 @@ export const DraggableEvent = ({
                         pointerEvents: "none",
                         padding: 0,
                         margin: 0,
+                        color: "black",
                     }, resolved?.time]}
                     defaultValue={initialDisplayTime}
                     animatedProps={animatedTimeProps}
