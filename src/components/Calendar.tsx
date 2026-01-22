@@ -1,7 +1,7 @@
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {Gesture, GestureDetector} from "react-native-gesture-handler";
+import {scheduleOnRN} from 'react-native-worklets';
 import Animated, {
-    runOnJS,
     scrollTo,
     useAnimatedRef,
     useAnimatedScrollHandler,
@@ -10,7 +10,7 @@ import Animated, {
     withSpring
 } from "react-native-reanimated";
 import {Dimensions, LayoutChangeEvent, Platform, StyleSheet, useWindowDimensions, View} from "react-native";
-import {FlashList} from "@shopify/flash-list";
+import {FlashList, FlashListRef} from "@shopify/flash-list";
 import {
     combineDateAndTime,
     findDayIndexFor,
@@ -231,7 +231,7 @@ const CalendarInner: React.FC<CalendarProps> = (props) => {
     const verticalScrollViewRef = useAnimatedRef<Animated.ScrollView>();
     const headerScrollViewRef = useAnimatedRef<Animated.ScrollView>();
 
-    const flashListRef = useRef<FlashList<any>>(null);
+    const flashListRef = useRef<FlashListRef<any>>(null);
     const prevResourceIdsRef = useRef<(number)[]>([]);
     const [layout, setLayout] = useState<Layout | null>(null);
     const [dragReady, setDragReady] = useState(false);
@@ -361,7 +361,7 @@ const CalendarInner: React.FC<CalendarProps> = (props) => {
                 if (finalHeight !== eventHeight.value) {
                     eventHeight.value = finalHeight;
                     panYAbs.value = onScreenTop + (finalHeight / 2);
-                    runOnJS(triggerHaptic)();
+                    scheduleOnRN(triggerHaptic);
                 }
 
                 if (layout) {
@@ -397,7 +397,7 @@ const CalendarInner: React.FC<CalendarProps> = (props) => {
                 }
                 // 5. Update shared values
                 if (snappedAbsoluteTop !== eventStartedTop.value) {
-                    runOnJS(triggerHaptic)();
+                    scheduleOnRN(triggerHaptic);
                     eventStartedTop.value = snappedAbsoluteTop;
                 }
                 // 6. Convert the corrected absolute top back to a visual on-screen position
@@ -482,7 +482,7 @@ const CalendarInner: React.FC<CalendarProps> = (props) => {
             isPulling.value = false;
             isDragging.value = false
 
-            runOnJS(finalizeDrag)(colIndex, adjustedFinalEventTop, eventHeight.value);
+            scheduleOnRN(finalizeDrag, colIndex, adjustedFinalEventTop, eventHeight.value);
         });
 
     const scrollListTo = (x: number) => {
@@ -507,9 +507,9 @@ const CalendarInner: React.FC<CalendarProps> = (props) => {
             const newScrollX = scrollX.value + increment;
 
             // Use the Reanimated scrollTo function to jump to the next column
-            runOnJS(scrollListTo)(newScrollX);
+            scheduleOnRN(scrollListTo, newScrollX);
             // Trigger a haptic on each scroll jump
-            runOnJS(triggerHaptic)("Medium");
+            scheduleOnRN(triggerHaptic, "Medium");
         }
     });
 
@@ -561,7 +561,7 @@ const CalendarInner: React.FC<CalendarProps> = (props) => {
         if (scrollDiff >= snapInterval) {
             // Update the last position to the current position
             lastHapticScrollY.value = newScrollY;
-            runOnJS(triggerHaptic)("Medium");
+            scheduleOnRN(triggerHaptic, "Medium");
         }
     });
 
@@ -614,7 +614,7 @@ const CalendarInner: React.FC<CalendarProps> = (props) => {
             setSelectedEvent(event);
             // 4) now allow React to mount the overlay next tick
             requestAnimationFrame(() => setDragReady(true));
-            runOnJS(triggerHaptic)("Medium");
+            triggerHaptic("Medium");
         };
     }, []); // runs once; reads fresh values via refs
 
@@ -644,7 +644,7 @@ const CalendarInner: React.FC<CalendarProps> = (props) => {
     });
 
     const handleBlockLongPress = useCallback((resourceId: number, time: string) => {
-        runOnJS(triggerHaptic)("Medium");
+        triggerHaptic("Medium");
         const resource = resources.find(r => r.id === resourceId);
 
         if (onBlockLongPress)
@@ -652,7 +652,7 @@ const CalendarInner: React.FC<CalendarProps> = (props) => {
     }, [resources, onBlockLongPress]);
 
     const handleBlockPress = useCallback((resourceId: number, time: string) => {
-        runOnJS(triggerHaptic)("Medium");
+        triggerHaptic("Medium");
         const resource = resources.find(r => r.id === resourceId);
 
         if (onBlockTap)
@@ -821,8 +821,6 @@ const CalendarInner: React.FC<CalendarProps> = (props) => {
                             scrollEnabled={!selectedEvent}
                             ref={flashListRef}
                             onScroll={flashListScrollHandler}  // Sync with header
-                            estimatedItemSize={APPOINTMENT_BLOCK_WIDTH}
-                            removeClippedSubviews={true}
                             data={!isMultiDay ? resourceIds : columns}
                             horizontal={true}
                             renderItem={renderItem}

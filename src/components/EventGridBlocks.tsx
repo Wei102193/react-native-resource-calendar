@@ -3,7 +3,7 @@ import {useMemo} from 'react';
 import {View} from 'react-native';
 import {Canvas, Line, Rect} from '@shopify/react-native-skia';
 import {Gesture, GestureDetector} from 'react-native-gesture-handler';
-import {runOnJS} from 'react-native-reanimated';
+import {scheduleOnRN} from 'react-native-worklets';
 
 type Props = {
     handleBlockPress: (time: string) => void;
@@ -85,37 +85,45 @@ export const EventGridBlocksSkia: React.FC<Props> = ({
     const longPressGesture = Gesture.LongPress()
         .onBegin((e) => {
             'worklet';
-            runOnJS(onPressBegin)(Math.floor(e.y / rowHeight))
-        })
-        .onTouchesUp(() => {
-            'worklet';
-            runOnJS(onTouchesUp)()
+            scheduleOnRN(onPressBegin, Math.floor(e.y / rowHeight));
         })
         .onEnd((e) => {
             'worklet';
-            runOnJS(onSlotLongPress)(Math.floor(e.y / rowHeight))
+            scheduleOnRN(onSlotLongPress, Math.floor(e.y / rowHeight));
+        })
+        .onTouchesUp(() => {
+            'worklet';
+            scheduleOnRN(onTouchesUp);
+        })
+        .onTouchesCancelled(() => {
+            'worklet';
+            scheduleOnRN(onTouchesUp);
         })
         .onFinalize(() => {
             'worklet';
-            runOnJS(onTouchesUp)()
+            scheduleOnRN(onTouchesUp);
         });
 
     const tapGesture = Gesture.Tap()
         .onBegin((e) => {
             'worklet';
-            runOnJS(onPressBegin)(Math.floor(e.y / rowHeight))
+            scheduleOnRN(onPressBegin, Math.floor(e.y / rowHeight));
         })
         .onEnd((e) => {
             'worklet';
-            runOnJS(onSlotPress)(Math.floor(e.y / rowHeight))
+            scheduleOnRN(onSlotPress, Math.floor(e.y / rowHeight));
         })
         .onTouchesUp(() => {
             'worklet';
-            runOnJS(onTouchesUp)()
+            scheduleOnRN(onTouchesUp);
+        })
+        .onTouchesCancelled(() => {
+            'worklet';
+            scheduleOnRN(onTouchesUp);
         })
         .onFinalize(() => {
             'worklet';
-            runOnJS(onTouchesUp)()
+            scheduleOnRN(onTouchesUp);
         });
 
     // Whichever activates first (tap vs long press) wins
