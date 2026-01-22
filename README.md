@@ -22,11 +22,23 @@ https://github.com/user-attachments/assets/68fe0283-73ce-4689-8241-6587b817ecbd
 
 ## 📦 Installation
 
+This library supports multiple Expo SDK versions via npm dist-tags.
+
+✅ Expo SDK 54 (default / latest)
 ```bash
 npm install react-native-resource-calendar
 # or
 yarn add react-native-resource-calendar
 ```
+This installs the latest release, compatible with Expo SDK 54.
+
+🧭 Expo SDK 53 (legacy)
+```bash
+npm install react-native-resource-calendar@legacy
+# or
+yarn add react-native-resource-calendar@legacy
+```
+Use this if your app is still running Expo SDK 53.
 
 ## ⚙️ Peer Dependencies
 
