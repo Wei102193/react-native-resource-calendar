@@ -87,17 +87,21 @@ export const EventGridBlocksSkia: React.FC<Props> = ({
             'worklet';
             scheduleOnRN(onPressBegin, Math.floor(e.y / rowHeight));
         })
-        .onTouchesUp(() => {
-            'worklet';
-            scheduleOnRN(onTouchesUp)
-        })
         .onEnd((e) => {
             'worklet';
             scheduleOnRN(onSlotLongPress, Math.floor(e.y / rowHeight));
         })
+        .onTouchesUp(() => {
+            'worklet';
+            scheduleOnRN(onTouchesUp);
+        })
+        .onTouchesCancelled(() => {
+            'worklet';
+            scheduleOnRN(onTouchesUp);
+        })
         .onFinalize(() => {
             'worklet';
-            scheduleOnRN(onTouchesUp)
+            scheduleOnRN(onTouchesUp);
         });
 
     const tapGesture = Gesture.Tap()
@@ -107,15 +111,19 @@ export const EventGridBlocksSkia: React.FC<Props> = ({
         })
         .onEnd((e) => {
             'worklet';
-            scheduleOnRN(onSlotPress, Math.floor(e.y / rowHeight))
+            scheduleOnRN(onSlotPress, Math.floor(e.y / rowHeight));
         })
         .onTouchesUp(() => {
             'worklet';
-            scheduleOnRN(onTouchesUp)
+            scheduleOnRN(onTouchesUp);
+        })
+        .onTouchesCancelled(() => {
+            'worklet';
+            scheduleOnRN(onTouchesUp);
         })
         .onFinalize(() => {
             'worklet';
-            scheduleOnRN(onTouchesUp)
+            scheduleOnRN(onTouchesUp);
         });
 
     // Whichever activates first (tap vs long press) wins
