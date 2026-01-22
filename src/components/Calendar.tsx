@@ -509,7 +509,7 @@ const CalendarInner: React.FC<CalendarProps> = (props) => {
             // Use the Reanimated scrollTo function to jump to the next column
             scheduleOnRN(scrollListTo, newScrollX);
             // Trigger a haptic on each scroll jump
-            scheduleOnRN(triggerHaptic)("Medium");
+            scheduleOnRN(triggerHaptic, "Medium");
         }
     });
 
@@ -561,7 +561,7 @@ const CalendarInner: React.FC<CalendarProps> = (props) => {
         if (scrollDiff >= snapInterval) {
             // Update the last position to the current position
             lastHapticScrollY.value = newScrollY;
-            scheduleOnRN(triggerHaptic)("Medium");
+            scheduleOnRN(triggerHaptic, "Medium");
         }
     });
 
