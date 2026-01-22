@@ -87,13 +87,17 @@ export const EventGridBlocksSkia: React.FC<Props> = ({
             'worklet';
             runOnJS(onPressBegin)(Math.floor(e.y / rowHeight))
         })
-        .onTouchesUp(() => {
-            'worklet';
-            runOnJS(onTouchesUp)()
-        })
         .onEnd((e) => {
             'worklet';
             runOnJS(onSlotLongPress)(Math.floor(e.y / rowHeight))
+        })
+        .onTouchesCancelled(() => {
+            'worklet';
+            runOnJS(onTouchesUp)()
+        })
+        .onTouchesUp(() => {
+            'worklet';
+            runOnJS(onTouchesUp)()
         })
         .onFinalize(() => {
             'worklet';
@@ -108,6 +112,10 @@ export const EventGridBlocksSkia: React.FC<Props> = ({
         .onEnd((e) => {
             'worklet';
             runOnJS(onSlotPress)(Math.floor(e.y / rowHeight))
+        })
+        .onTouchesCancelled(() => {
+            'worklet';
+            runOnJS(onTouchesUp)()
         })
         .onTouchesUp(() => {
             'worklet';
