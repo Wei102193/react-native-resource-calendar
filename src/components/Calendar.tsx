@@ -821,7 +821,6 @@ const CalendarInner: React.FC<CalendarProps> = (props) => {
                             scrollEnabled={!selectedEvent}
                             ref={flashListRef}
                             onScroll={flashListScrollHandler}  // Sync with header
-                            removeClippedSubviews={true}
                             data={!isMultiDay ? resourceIds : columns}
                             horizontal={true}
                             renderItem={renderItem}
