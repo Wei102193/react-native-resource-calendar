@@ -83,11 +83,12 @@ export const EventGridBlocksSkia: React.FC<Props> = ({
     }, []);
 
     const longPressGesture = Gesture.LongPress()
+        .minDuration(350)
         .onBegin((e) => {
             'worklet';
             scheduleOnRN(onPressBegin, Math.floor(e.y / rowHeight));
         })
-        .onEnd((e) => {
+        .onStart((e) => {
             'worklet';
             scheduleOnRN(onSlotLongPress, Math.floor(e.y / rowHeight));
         })
