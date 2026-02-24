@@ -96,6 +96,7 @@ type Layout = {
 };
 
 const AnimatedFlashList = Animated.createAnimatedComponent(FlashList);
+const DEFAULT_TIMEZONE = Intl?.DateTimeFormat()?.resolvedOptions()?.timeZone;
 
 const CalendarInner: React.FC<CalendarProps> = (props) => {
     const {width} = useWindowDimensions();
@@ -108,7 +109,7 @@ const CalendarInner: React.FC<CalendarProps> = (props) => {
         startMinutes,
         hourHeight = 120,
         snapIntervalInMinutes = 5,
-        timezone = Intl?.DateTimeFormat()?.resolvedOptions()?.timeZone,
+        timezone = DEFAULT_TIMEZONE,
         resources,
         onResourcePress,
         onBlockLongPress,
@@ -134,11 +135,16 @@ const CalendarInner: React.FC<CalendarProps> = (props) => {
 
     const snapInterval = (hourHeight / 60) * snapIntervalInMinutes;
     const onPressRef = React.useRef(onEventPress);
+    onPressRef.current = onEventPress;
     const onLongPressRef = React.useRef(onEventLongPress);
+    onLongPressRef.current = onEventLongPress;
     const internalOnLongPress = useRef<((e: Event) => void) | null>(null);
     const onDisabledBlockPressRef = React.useRef(onDisabledBlockPress);
+    onDisabledBlockPressRef.current = onDisabledBlockPress;
     const selectedRef = useRef<FlagFn | undefined>(props.isEventSelected);
+    selectedRef.current = props.isEventSelected;
     const disabledRef = useRef<FlagFn | undefined>(props.isEventDisabled);
+    disabledRef.current = props.isEventDisabled;
 
     const effectiveRenderer = useMemo<EventRenderer>(() => {
         return (p) => (
@@ -156,32 +162,8 @@ const CalendarInner: React.FC<CalendarProps> = (props) => {
     const isEventDisabledStable = useCallback<FlagFn>(
         (ev) => (disabledRef.current ? disabledRef.current(ev) : false), []);
 
-    // Keep refs up to date
-    useEffect(() => {
-        onPressRef.current = onEventPress;
-    }, [onEventPress]);
-
-    useEffect(() => {
-        onLongPressRef.current = onEventLongPress;
-    }, [onEventLongPress]);
-
-    useEffect(() => {
-        onDisabledBlockPressRef.current = onDisabledBlockPress;
-    }, [onDisabledBlockPress]);
-
-    useEffect(() => {
-        rendererRef.current = effectiveRenderer;
-    }, [effectiveRenderer]);
-
-    useEffect(() => {
-        selectedRef.current = props.isEventSelected;
-    }, [props.isEventSelected]);
-
-    useEffect(() => {
-        disabledRef.current = props.isEventDisabled;
-    }, [props.isEventDisabled]);
-
     const rendererRef = useRef<EventRenderer>(effectiveRenderer);
+    rendererRef.current = effectiveRenderer;
     const stableRenderer = useCallback<EventRenderer>((p) => rendererRef.current(p), []);
 
     const stableOnPress = React.useCallback((e: Event) => onPressRef.current?.(e), []);
@@ -193,29 +175,21 @@ const CalendarInner: React.FC<CalendarProps> = (props) => {
     const setSelectedEvent = useSetSelectedEvent();
     const setDraggedEventDraft = useSetDraggedEventDraft();
 
-    const APPOINTMENT_BLOCK_WIDTH = (width - TIME_LABEL_WIDTH) / numberOfColumns;
+    const APPOINTMENT_BLOCK_WIDTH = useMemo(
+        () => (width - TIME_LABEL_WIDTH) / numberOfColumns,
+        [width, numberOfColumns]
+    );
 
     const hourHeightRef = useRef(hourHeight);
+    hourHeightRef.current = hourHeight;
     const resourcesRef = useRef(resources);
+    resourcesRef.current = resources;
     const apptWidthRef = useRef(APPOINTMENT_BLOCK_WIDTH);
+    apptWidthRef.current = APPOINTMENT_BLOCK_WIDTH;
     const isMultiDayRef = useRef(isMultiDay);
+    isMultiDayRef.current = isMultiDay;
     const daysRef = useRef(days);
-
-    useEffect(() => {
-        hourHeightRef.current = hourHeight
-    }, [hourHeight]);
-    useEffect(() => {
-        resourcesRef.current = resources
-    }, [resources]);
-    useEffect(() => {
-        apptWidthRef.current = APPOINTMENT_BLOCK_WIDTH
-    }, [APPOINTMENT_BLOCK_WIDTH]);
-    useEffect(() => {
-        isMultiDayRef.current = isMultiDay
-    }, [isMultiDay]);
-    useEffect(() => {
-        daysRef.current = days
-    }, [days]);
+    daysRef.current = days;
 
     useEffect(() => {
         if (!selectedEvent) {
@@ -237,6 +211,7 @@ const CalendarInner: React.FC<CalendarProps> = (props) => {
     const [dragReady, setDragReady] = useState(false);
 
     const dateRef = useRef(date); // Store `date` in a ref to prevent re-renders
+    dateRef.current = date;
 
     const eventStartedTop = useSharedValue(0);
     const eventHeight = useSharedValue(0);
@@ -674,10 +649,6 @@ const CalendarInner: React.FC<CalendarProps> = (props) => {
         };
     }, [setSelectedEvent, selectedEvent, setDragReady]);
 
-    useEffect(() => {
-        dateRef.current = date; // Update the ref whenever date prop changes
-    }, [date]);
-
     const renderItem = useCallback(({item, index}: any) => {
         // Resolve which date & resource this column represents:
         const rid = !isMultiDay
@@ -739,7 +710,6 @@ const CalendarInner: React.FC<CalendarProps> = (props) => {
         stableOnPress,
         internalStableOnLongPress,
         stableOnDisabledBlockPress,
-        dateRef
     ]);
 
     return <>

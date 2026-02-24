@@ -1,10 +1,9 @@
-import React from "react";
+import React, {useCallback} from "react";
 import {StyleSheet, Text, TextInput, TextStyle, TouchableOpacity, ViewStyle} from "react-native";
 import Row from "../components/common/layout/Row";
 import Col from "../components/common/layout/Col";
 import {Event, EventRenderContext} from "@/types/calendarTypes";
 import {EventFrame, getTextSize, minutesToTime, scalePosition} from "@/utilities/helpers";
-import {useCalendarBinding} from "@/store/bindings/BindingProvider";
 import {useResolvedFont} from "@/theme/ThemeContext";
 import {StyleProp} from "react-native/Libraries/StyleSheet/StyleSheet";
 
@@ -32,6 +31,7 @@ interface EventBlockProps {
     frame: EventFrame;
     disabled?: boolean;
     selected?: boolean;
+    anyEventSelected?: boolean;
     onLongPress?: (event: Event) => void;
     onPress?: (event: Event) => void;
     slots?: EventSlots;
@@ -44,14 +44,11 @@ const EventBlock: React.FC<EventBlockProps> = React.memo(({
                                                               event,
                                                               onLongPress,
                                                               onPress, disabled, selected,
+                                                              anyEventSelected,
                                                               hourHeight, slots,
                                                               frame,
                                                               styleOverrides
                                                           }) => {
-    const {useGetSelectedEvent} =
-        useCalendarBinding();
-    const selectedAppointment = useGetSelectedEvent();
-
     const eventTop = scalePosition(event.from, hourHeight);
     const eventHeight = scalePosition(event.to - event.from, hourHeight);
 
@@ -64,7 +61,7 @@ const EventBlock: React.FC<EventBlockProps> = React.memo(({
         left: frame.leftPx + 1,
         width: frame.widthPx - 3,
         zIndex: frame.zIndex,
-        opacity: selectedAppointment || disabled ? 0.5 : 1,
+        opacity: anyEventSelected || disabled ? 0.5 : 1,
         borderWidth: selected ? 2 : 1,
         borderColor: selected ? "#4d959c" : "rgba(0,0,0,0.12)",
     };
@@ -73,6 +70,9 @@ const EventBlock: React.FC<EventBlockProps> = React.memo(({
         typeof styleOverrides === 'function'
             ? styleOverrides(event) ?? {}
             : styleOverrides ?? {};
+
+    const handlePress = useCallback(() => onPress?.(event), [onPress, event]);
+    const handleLongPress = useCallback(() => onLongPress?.(event), [onLongPress, event]);
 
     if (eventHeight == 0)
         return null;
@@ -86,12 +86,8 @@ const EventBlock: React.FC<EventBlockProps> = React.memo(({
         <TouchableOpacity
             style={[styles.event, resolved?.container, dynamicStyle]}
             disabled={disabled}
-            onPress={() => {
-                onPress && onPress(event);
-            }}
-            onLongPress={() => {
-                onLongPress && onLongPress(event);
-            }}
+            onPress={handlePress}
+            onLongPress={handleLongPress}
         >
             <Col style={[{position: "relative"}, resolved?.content]}>
                 <TextInput

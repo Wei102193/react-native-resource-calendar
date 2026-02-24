@@ -31,10 +31,12 @@ const EventBlocks: React.FC<EventBlocksProps> = React.memo(({
                                                                 date: dateProp
                                                             }) => {
 
-    const {useEventsFor, useGetDate} =
+    const {useEventsFor, useGetDate, useGetSelectedEvent} =
         useCalendarBinding();
     const date = useGetDate();
+    const selectedEvent = useGetSelectedEvent();
     const events = useEventsFor(id, dateProp ?? date);
+    const anyEventSelected = !!selectedEvent;
     const frameMap = useMemo(
         () => computeEventFrames(events, EVENT_BLOCK_WIDTH, mode),
         [events, mode, EVENT_BLOCK_WIDTH]
@@ -42,19 +44,20 @@ const EventBlocks: React.FC<EventBlocksProps> = React.memo(({
 
     const Renderer = eventRenderer;
 
-    return (events?.map((evt: Event, index: number) => {
+    return (events?.map((evt: Event) => {
                 const selected = isEventSelected?.(evt) ?? false;
                 const disabled = isEventDisabled?.(evt) ?? false;
 
                 return <Renderer
-                    key={`${evt.from}-${evt.to}-${index}`} // Unique key for appointment blocks
+                    key={`${evt.id}`}
                     event={evt}
-                    onLongPress={(evt: Event) => onLongPress(evt)}
-                    onPress={(evt: Event) => onPress(evt)}
+                    onLongPress={onLongPress}
+                    onPress={onPress}
                     hourHeight={hourHeight}
                     frame={frameMap.get(evt.id)!}
                     selected={selected}
                     disabled={disabled}
+                    anyEventSelected={anyEventSelected}
                 />
             }
         )
