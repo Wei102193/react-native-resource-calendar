@@ -44,12 +44,12 @@ const EventBlocks: React.FC<EventBlocksProps> = React.memo(({
 
     const Renderer = eventRenderer;
 
-    return (events?.map((evt: Event) => {
+    return (events?.map((evt: Event, index: number) => {
                 const selected = isEventSelected?.(evt) ?? false;
                 const disabled = isEventDisabled?.(evt) ?? false;
 
                 return <Renderer
-                    key={`${evt.id}`}
+                    key={`${evt.from}-${evt.to}-${index}`} // Unique key for appointment blocks
                     event={evt}
                     onLongPress={onLongPress}
                     onPress={onPress}
