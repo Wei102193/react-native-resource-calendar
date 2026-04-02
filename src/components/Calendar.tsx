@@ -770,7 +770,7 @@ const CalendarInner: React.FC<CalendarProps> = (props) => {
                         top: 0,
                         left: TIME_LABEL_WIDTH,
                         paddingLeft: TIME_LABEL_WIDTH,
-                        width: width - TIME_LABEL_WIDTH,
+                        width: (layout?.width ?? width) - TIME_LABEL_WIDTH,
                         height: '100%',
                         backgroundColor: 'rgba(0, 0, 0, 0.1)',
                         zIndex: 1,
