@@ -175,17 +175,10 @@ const CalendarInner: React.FC<CalendarProps> = (props) => {
     const setSelectedEvent = useSetSelectedEvent();
     const setDraggedEventDraft = useSetDraggedEventDraft();
 
-    const APPOINTMENT_BLOCK_WIDTH = useMemo(
-        () => (width - TIME_LABEL_WIDTH) / numberOfColumns,
-        [width, numberOfColumns]
-    );
-
     const hourHeightRef = useRef(hourHeight);
     hourHeightRef.current = hourHeight;
     const resourcesRef = useRef(resources);
     resourcesRef.current = resources;
-    const apptWidthRef = useRef(APPOINTMENT_BLOCK_WIDTH);
-    apptWidthRef.current = APPOINTMENT_BLOCK_WIDTH;
     const isMultiDayRef = useRef(isMultiDay);
     isMultiDayRef.current = isMultiDay;
     const daysRef = useRef(days);
@@ -200,7 +193,7 @@ const CalendarInner: React.FC<CalendarProps> = (props) => {
 
     useEffect(() => {
         scrollX.value = 0;
-    }, [mode, numberOfColumns]);
+    }, [mode, numberOfColumns, width]);
 
     const verticalScrollViewRef = useAnimatedRef<Animated.ScrollView>();
     const headerScrollViewRef = useAnimatedRef<Animated.ScrollView>();
@@ -209,6 +202,14 @@ const CalendarInner: React.FC<CalendarProps> = (props) => {
     const prevResourceIdsRef = useRef<(number)[]>([]);
     const [layout, setLayout] = useState<Layout | null>(null);
     const [dragReady, setDragReady] = useState(false);
+
+    const APPOINTMENT_BLOCK_WIDTH = useMemo(
+        () => ((layout?.width ?? width) - TIME_LABEL_WIDTH) / numberOfColumns,
+        [layout?.width, width, numberOfColumns]
+    );
+
+    const apptWidthRef = useRef(APPOINTMENT_BLOCK_WIDTH);
+    apptWidthRef.current = APPOINTMENT_BLOCK_WIDTH;
 
     const dateRef = useRef(date); // Store `date` in a ref to prevent re-renders
     dateRef.current = date;
@@ -279,7 +280,7 @@ const CalendarInner: React.FC<CalendarProps> = (props) => {
             resourceId: landedResourceId,
             date: landedDate,
         });
-    }, [mode, resourceIds, activeResourceId, selectedEvent, hourHeight, setDraggedEventDraft, days]);
+    }, [mode, resourceIds, activeResourceId, selectedEvent, hourHeight, setDraggedEventDraft, days, date]);
 
     const columns: Column[] = useMemo(() => {
         if (!isMultiDay) {
@@ -587,6 +588,17 @@ const CalendarInner: React.FC<CalendarProps> = (props) => {
             lastHapticScrollY.value = scrollY.value;
             eventHeight.value = initialHeight;
             setSelectedEvent(event);
+            // Populate the draft immediately so it's never null when the action bar is
+            // visible. finalizeDrag will overwrite this with the final snapped values
+            // once the gesture ends; this just closes the race window where the user
+            // taps Save before scheduleOnRN(finalizeDrag) has had a chance to run.
+            setDraggedEventDraft({
+                event,
+                from: positionToMinutes(eventTop, hh),
+                to: positionToMinutes(eventTop + initialHeight, hh),
+                resourceId: event.resourceId,
+                date: event.date,
+            });
             // 4) now allow React to mount the overlay next tick
             requestAnimationFrame(() => setDragReady(true));
             triggerHaptic("Medium");
@@ -636,10 +648,9 @@ const CalendarInner: React.FC<CalendarProps> = (props) => {
 
     useEffect(() => {
         const handleOrientationChange = () => {
-            if (selectedEvent) {
-                setSelectedEvent(null);
-                setDragReady(false);
-            }
+            setSelectedEvent(null);
+            setDragReady(false);
+            setLayout(null);
         };
 
         const subscription = Dimensions.addEventListener('change', handleOrientationChange);
@@ -647,7 +658,7 @@ const CalendarInner: React.FC<CalendarProps> = (props) => {
         return () => {
             subscription.remove();
         };
-    }, [setSelectedEvent, selectedEvent, setDragReady]);
+    }, [setSelectedEvent, setDragReady]);
 
     const renderItem = useCallback(({item, index}: any) => {
         // Resolve which date & resource this column represents:
