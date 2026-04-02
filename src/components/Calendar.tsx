@@ -561,10 +561,6 @@ const CalendarInner: React.FC<CalendarProps> = (props) => {
             const days = daysRef.current;
             const APPOINTMENT_BLOCK_WIDTH = apptWidthRef.current;
             const isMultiDay = isMultiDayRef.current;
-            const EPS = 0.0001;
-            // Use floor (+EPS) so we never jump to the next col early
-            const leftmostColumnIndex = Math.max(0, Math.floor((scrollX.value + EPS) / APPOINTMENT_BLOCK_WIDTH));
-
             let absoluteColIndex: number;
 
             if (!isMultiDay) {
@@ -574,12 +570,14 @@ const CalendarInner: React.FC<CalendarProps> = (props) => {
                 // multi-day → column represents a day
                 absoluteColIndex = findDayIndexFor(event.date, days);
             }
-            const screenColumn = absoluteColIndex - leftmostColumnIndex;
 
+            // Use exact scrollX (not floored) so fractional scroll offsets don't
+            // shift the ghost to the wrong column.
             const selectedAppointmentStartedX =
                 TIME_LABEL_WIDTH +
-                APPOINTMENT_BLOCK_WIDTH / 2 +
-                APPOINTMENT_BLOCK_WIDTH * screenColumn;
+                APPOINTMENT_BLOCK_WIDTH * absoluteColIndex +
+                APPOINTMENT_BLOCK_WIDTH / 2 -
+                scrollX.value;
 
             panXAbs.value = selectedAppointmentStartedX;
             startedX.value = selectedAppointmentStartedX;
