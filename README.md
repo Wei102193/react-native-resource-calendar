@@ -294,6 +294,7 @@ The `Calendar` component accepts a flexible set of props for customizing layout,
 | **`onDisabledBlockPress`**  | `(block: DisabledBlock) => void`                                                                                 | —                       | Tap on a disabled block (e.g., lunch).                                                                                                  |
 | **`onEventPress`**          | `(event: Event) => void`                                                                                         | —                       | Tap on an event.                                                                                                                        |
 | **`onEventLongPress`**      | `(event: Event) => void`                                                                                         | —                       | Long-press on an event. The calendar also preps internal drag state here.                                                               |
+| **`scrollsToTop`**          | `boolean`                                                                                                        | `true`                  | iOS only. When `true`, tapping the status bar scrolls the timeline back to the top. Set to `false` if another scroll view in your screen should handle this gesture instead. |
 
 ---
 

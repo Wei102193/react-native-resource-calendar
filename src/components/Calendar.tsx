@@ -86,6 +86,7 @@ interface CalendarProps {
 
     mode?: CalendarMode;
     activeResourceId?: number;
+    scrollsToTop?: boolean;
 }
 
 type Layout = {
@@ -123,6 +124,7 @@ const CalendarInner: React.FC<CalendarProps> = (props) => {
         overLappingLayoutMode = 'stacked',
         mode = 'day',
         activeResourceId,
+        scrollsToTop = true,
     } = props;
 
     const numberOfColumns = mode === 'day' ? numberOfColumnsProp : (mode === 'week' ? 7 : 3);
@@ -780,6 +782,7 @@ const CalendarInner: React.FC<CalendarProps> = (props) => {
                         onScroll={verticalScrollHandler}
                         ref={verticalScrollViewRef} // Ref for vertical scrolling
                         scrollEventThrottle={16}
+                        scrollsToTop={scrollsToTop}
                         snapToInterval={hourHeight}
                         decelerationRate="fast"
                         snapToAlignment="start"  // Align the column to the start
