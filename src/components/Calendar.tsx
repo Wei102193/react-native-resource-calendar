@@ -189,7 +189,8 @@ const CalendarInner: React.FC<CalendarProps> = (props) => {
     useEffect(() => {
         if (!selectedEvent) {
             setDraggedEventDraft(null);
-            setDragReady(false)
+            setDragReady(false);
+            hasSelectedEvent.value = false;
         }
     }, [selectedEvent, setSelectedEvent, setDraggedEventDraft]);
 
@@ -234,6 +235,7 @@ const CalendarInner: React.FC<CalendarProps> = (props) => {
     const startedX = useSharedValue(0);
     const startedY = useSharedValue(0);
     const touchY = useSharedValue(0); // NEW
+    const hasSelectedEvent = useSharedValue(false);
 
     const triggerHaptic = useCallback(
         async (style: HapticStyle = "Light") => {
@@ -300,7 +302,7 @@ const CalendarInner: React.FC<CalendarProps> = (props) => {
         .onTouchesMove((_evt, stateManager) => {
             'worklet';
             if (isIOS) return;
-            if (selectedEvent)
+            if (hasSelectedEvent.value)
                 stateManager.activate();
             else stateManager.end();
         })
@@ -587,6 +589,7 @@ const CalendarInner: React.FC<CalendarProps> = (props) => {
             // --- Initialize state ---
             lastHapticScrollY.value = scrollY.value;
             eventHeight.value = initialHeight;
+            hasSelectedEvent.value = true; // set before setSelectedEvent so the worklet sees it immediately
             setSelectedEvent(event);
             // Populate the draft immediately so it's never null when the action bar is
             // visible. finalizeDrag will overwrite this with the final snapped values

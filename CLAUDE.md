@@ -52,7 +52,7 @@ Layout algorithms live in `src/utilities/helpers.ts`.
 ### Gesture / Reanimated Patterns
 
 - Pan gesture uses **manual activation on Android** (`manualActivation(!isIOS)`) and auto-activates on iOS
-- Android drag activation checks `hasDraggingCard.value` (SharedValue) inside `onTouchesMove` — **not** a closure variable
+- Android drag activation checks `hasSelectedEvent.value` (SharedValue) inside `onTouchesMove` — **not** a closure variable. `hasSelectedEvent` is set synchronously in `internalOnLongPress` before `setSelectedEvent` so the worklet sees it immediately, without waiting for a React re-render
 - Auto-scroll at edges: `useFrameCallback` + `scrollTo(animatedRef, x, y, true)` on the UI thread
 - Bridge between React hooks and worklets: `useRef` caches values that worklets need (`hourHeightRef`, `resourcesRef`)
 - Use `scheduleOnRN(fn, ...args)` from `react-native-worklets` to call back to the JS thread (not `runOnJS`)
@@ -69,6 +69,12 @@ insertIndex = first card where card.y + card.height/2 > targetContentY
 ```
 
 Constants: `BOARD_PADDING=12`, `COLUMN_GAP=12`, `DEFAULT_COLUMN_WIDTH=240`, `COLUMN_HEADER_HEIGHT=48`, `CARD_LIST_PADDING_TOP=10`
+
+### Overlay Dim + ScrollsToTop
+
+When an event is selected, a semi-transparent overlay covers the timeline. Its width uses `layout?.width ?? width` (measured layout, not the `width` prop) so it stays correct after rotation.
+
+The `scrollsToTop` prop (default `true`) is forwarded directly to the vertical `Animated.ScrollView` — iOS status-bar-tap-to-scroll-top behaviour. Set to `false` if another scroll view in the host screen should own that gesture.
 
 ### Event Customization
 
@@ -91,7 +97,7 @@ eventStyleOverrides?: StyleOverrides | ((event) => StyleOverrides)
 | File | Role |
 |------|------|
 | `src/index.ts` | Public API surface |
-| `src/components/Calendar.tsx` | Main orchestrator — gestures, scroll sync, drag logic (~844 lines) |
+| `src/components/Calendar.tsx` | Main orchestrator — gestures, scroll sync, drag logic (~859 lines) |
 | `src/store/bindings/ZustandBinding.tsx` | Zustand store + selector hooks |
 | `src/store/StoreFeeder.tsx` | Props → store state transformer |
 | `src/utilities/helpers.ts` | Layout algorithms, overlap detection, time↔pixel conversion |
@@ -103,10 +109,10 @@ eventStyleOverrides?: StyleOverrides | ((event) => StyleOverrides)
 
 Must be installed by consumers. All are listed as `external` in tsup so they're never bundled:
 
-- `react-native-reanimated ~4.1.1`
-- `react-native-gesture-handler ~2.28.0`
-- `react-native-worklets ^0.5.1`
-- `@shopify/flash-list ~2.2.0`
-- `@shopify/react-native-skia ~2.2.12`
-- `react-native-svg ~15.12.1`
-- `expo-haptics ~15.0.7` *(optional)*
+- `react-native-reanimated ~4.2.1`
+- `react-native-gesture-handler ~2.30.0`
+- `react-native-worklets ^0.7.2`
+- `@shopify/flash-list ~2.3.1`
+- `@shopify/react-native-skia ~2.4.18`
+- `react-native-svg ~15.15.3`
+- `expo-haptics ~55.0.13` *(optional)*
