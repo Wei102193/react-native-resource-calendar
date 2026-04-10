@@ -651,9 +651,11 @@ const CalendarInner: React.FC<CalendarProps> = (props) => {
 
     useEffect(() => {
         const handleOrientationChange = () => {
-            setSelectedEvent(null);
-            setDragReady(false);
-            setLayout(null);
+            if (selectedEvent) {
+                setSelectedEvent(null);
+                setDragReady(false);
+                // setLayout(null);
+            }
         };
 
         const subscription = Dimensions.addEventListener('change', handleOrientationChange);
@@ -661,7 +663,7 @@ const CalendarInner: React.FC<CalendarProps> = (props) => {
         return () => {
             subscription.remove();
         };
-    }, [setSelectedEvent, setDragReady]);
+    }, [setSelectedEvent, selectedEvent, setDragReady]);
 
     const renderItem = useCallback(({item, index}: any) => {
         // Resolve which date & resource this column represents:
