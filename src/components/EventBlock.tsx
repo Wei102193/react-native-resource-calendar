@@ -64,6 +64,9 @@ const EventBlock: React.FC<EventBlockProps> = React.memo(({
         opacity: anyEventSelected || disabled ? 0.5 : 1,
         borderWidth: selected ? 2 : 1,
         borderColor: selected ? "#4d959c" : "rgba(0,0,0,0.12)",
+        // When disabled, let touches fall through to the grid blocks beneath
+        // (e.g. "select a time" mode) instead of swallowing them.
+        pointerEvents: (disabled ? "none" : "auto") as "none" | "auto",
     };
 
     const resolved =
