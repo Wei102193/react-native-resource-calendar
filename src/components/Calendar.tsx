@@ -80,6 +80,9 @@ interface CalendarProps {
         | ((event: Event) => StyleOverrides | undefined);
     isEventSelected?: FlagFn;
     isEventDisabled?: FlagFn;
+    // When true, disabled (time-off) blocks are dimmed and pass touches through to
+    // the grid beneath, so a "select a time" flow can pick the slot under them.
+    disabledBlocksTapThrough?: boolean;
 
     theme?: CalendarTheme;
     overLappingLayoutMode?: LayoutMode;
@@ -709,6 +712,7 @@ const CalendarInner: React.FC<CalendarProps> = (props) => {
                         APPOINTMENT_BLOCK_WIDTH={APPOINTMENT_BLOCK_WIDTH}
                         hourHeight={hourHeight}
                         onDisabledBlockPress={stableOnDisabledBlockPress}
+                        tapThrough={props.disabledBlocksTapThrough}
                     />
                     <EventBlocks
                         id={rid!}
@@ -740,6 +744,7 @@ const CalendarInner: React.FC<CalendarProps> = (props) => {
         stableOnDisabledBlockPress,
         stableHandleBlockPress,
         stableHandleBlockLongPress,
+        props.disabledBlocksTapThrough,
     ]);
 
     // FlashList only re-runs `renderItem` for mounted cells when `data` or
@@ -756,6 +761,7 @@ const CalendarInner: React.FC<CalendarProps> = (props) => {
             isEventSelectedStable,
             isEventDisabledStable,
             effectiveRenderer,
+            disabledBlocksTapThrough: props.disabledBlocksTapThrough,
         }),
         [
             numberOfColumns,
@@ -765,6 +771,7 @@ const CalendarInner: React.FC<CalendarProps> = (props) => {
             isEventSelectedStable,
             isEventDisabledStable,
             effectiveRenderer,
+            props.disabledBlocksTapThrough,
         ]
     );
 

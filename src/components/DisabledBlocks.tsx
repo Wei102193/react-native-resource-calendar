@@ -20,6 +20,9 @@ interface DisabledBlocksProps {
     hourHeight: number;
     APPOINTMENT_BLOCK_WIDTH: number;
     onDisabledBlockPress?: (block: DisabledBlock) => void;
+    // When true, blocks are dimmed and let touches fall through to the grid
+    // beneath (so a "select a time" flow can pick the slot under a time-off).
+    tapThrough?: boolean;
     date?: Date;
 }
 
@@ -29,6 +32,7 @@ interface DisabledBlockComponentProps {
     hourHeight: number;
     disabledBlock: DisabledBlock;
     onDisabledBlockPress?: (block: DisabledBlock) => void;
+    tapThrough?: boolean;
     layout: EventFrame;
 }
 
@@ -56,7 +60,8 @@ const DisabledBlockComponent: React.FC<DisabledBlockComponentProps> = ({
                                                                            layout,
                                                                            disabledBlock,
                                                                            hourHeight,
-                                                                           onDisabledBlockPress
+                                                                           onDisabledBlockPress,
+                                                                           tapThrough
                                                                        }) => {
     const dynamicStyle = {
         backgroundColor: "#d3d3d3",
@@ -66,11 +71,15 @@ const DisabledBlockComponent: React.FC<DisabledBlockComponentProps> = ({
         width: layout.widthPx - 3,
         borderWidth: 1,
         borderColor: "rgba(0,0,0,0.12)",
+        opacity: tapThrough ? 0.5 : 1,
+        // Let touches fall through to the grid blocks beneath when tap-through.
+        pointerEvents: (tapThrough ? "none" : "auto") as "none" | "auto",
     };
     const titleFace = useResolvedFont({fontWeight: '600'});
 
     return <TouchableOpacity
         style={[styles.event, dynamicStyle]}
+        disabled={tapThrough}
         onPress={() => {
             onDisabledBlockPress && onDisabledBlockPress(disabledBlock);
         }}
@@ -101,6 +110,7 @@ const DisabledBlocks: React.FC<DisabledBlocksProps> = React.memo(({
                                                                       APPOINTMENT_BLOCK_WIDTH,
                                                                       hourHeight,
                                                                       onDisabledBlockPress,
+                                                                      tapThrough,
                                                                       date: dateProp
                                                                   }) => {
     const {useDisabledBlocksFor, useGetDate} =
@@ -124,6 +134,7 @@ const DisabledBlocks: React.FC<DisabledBlocksProps> = React.memo(({
                         height={scalePosition(disabledBlock.to - disabledBlock.from, hourHeight)}
                         layout={layoutMap.get(key)!}
                         onDisabledBlockPress={onDisabledBlockPress}
+                        tapThrough={tapThrough}
                     />
                 }
             )}
