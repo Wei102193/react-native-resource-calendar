@@ -143,10 +143,6 @@ const CalendarInner: React.FC<CalendarProps> = (props) => {
     const internalOnLongPress = useRef<((e: Event) => void) | null>(null);
     const onDisabledBlockPressRef = React.useRef(onDisabledBlockPress);
     onDisabledBlockPressRef.current = onDisabledBlockPress;
-    const selectedRef = useRef<FlagFn | undefined>(props.isEventSelected);
-    selectedRef.current = props.isEventSelected;
-    const disabledRef = useRef<FlagFn | undefined>(props.isEventDisabled);
-    disabledRef.current = props.isEventDisabled;
 
     const effectiveRenderer = useMemo<EventRenderer>(() => {
         return (p) => (
@@ -159,14 +155,10 @@ const CalendarInner: React.FC<CalendarProps> = (props) => {
     }, [eventSlots, eventStyleOverrides]);
 
     const isEventSelectedStable = useCallback<FlagFn>(
-        (ev) => (selectedRef.current ? selectedRef.current(ev) : false), []);
+        (ev) => props.isEventSelected?.(ev) ?? false, [props.isEventSelected]);
 
     const isEventDisabledStable = useCallback<FlagFn>(
-        (ev) => (disabledRef.current ? disabledRef.current(ev) : false), []);
-
-    const rendererRef = useRef<EventRenderer>(effectiveRenderer);
-    rendererRef.current = effectiveRenderer;
-    const stableRenderer = useCallback<EventRenderer>((p) => rendererRef.current(p), []);
+        (ev) => props.isEventDisabled?.(ev) ?? false, [props.isEventDisabled]);
 
     const stableOnPress = React.useCallback((e: Event) => onPressRef.current?.(e), []);
     const stableOnDisabledBlockPress = React.useCallback((b: DisabledBlock) => onDisabledBlockPressRef.current?.(b), []);
@@ -253,6 +245,10 @@ const CalendarInner: React.FC<CalendarProps> = (props) => {
         },
         [enableHapticFeedback]
     );
+    // Read the latest haptic fn from a ref so the once-mounted long-press handler
+    // (set up in a [] effect below) doesn't capture a stale `enableHapticFeedback`.
+    const triggerHapticRef = useRef(triggerHaptic);
+    triggerHapticRef.current = triggerHaptic;
 
     const resourceIds = useMemo(() => {
         const ids = resources?.map(item => item?.id) || [];
@@ -604,7 +600,7 @@ const CalendarInner: React.FC<CalendarProps> = (props) => {
             });
             // 4) now allow React to mount the overlay next tick
             requestAnimationFrame(() => setDragReady(true));
-            triggerHaptic("Medium");
+            triggerHapticRef.current("Medium");
         };
     }, []); // runs once; reads fresh values via refs
 
@@ -649,6 +645,22 @@ const CalendarInner: React.FC<CalendarProps> = (props) => {
             onBlockTap(resource!, new Date(time))
     }, [resources, onBlockTap]);
 
+    // Stable wrappers so `renderItem` doesn't need these in its deps (which would
+    // rebuild it on every `resources` change). The refs guarantee the latest
+    // `resources` lookup at press time even though the wrapper identity is frozen.
+    const handleBlockPressRef = useRef(handleBlockPress);
+    handleBlockPressRef.current = handleBlockPress;
+    const stableHandleBlockPress = useCallback(
+        (resourceId: number, time: string) => handleBlockPressRef.current(resourceId, time),
+        []
+    );
+    const handleBlockLongPressRef = useRef(handleBlockLongPress);
+    handleBlockLongPressRef.current = handleBlockLongPress;
+    const stableHandleBlockLongPress = useCallback(
+        (resourceId: number, time: string) => handleBlockLongPressRef.current(resourceId, time),
+        []
+    );
+
     useEffect(() => {
         const handleOrientationChange = () => {
             if (selectedEvent) {
@@ -682,8 +694,8 @@ const CalendarInner: React.FC<CalendarProps> = (props) => {
                     <EventGridBlocksSkia
                         hourHeight={hourHeight}
                         APPOINTMENT_BLOCK_WIDTH={APPOINTMENT_BLOCK_WIDTH}
-                        handleBlockPress={(time) => handleBlockPress(rid, combineDateAndTime(dayDate ?? dateRef.current, time))}
-                        handleBlockLongPress={(time) => handleBlockLongPress(rid, combineDateAndTime(dayDate ?? dateRef.current, time))}
+                        handleBlockPress={(time) => stableHandleBlockPress(rid, combineDateAndTime(dayDate ?? dateRef.current, time))}
+                        handleBlockLongPress={(time) => stableHandleBlockLongPress(rid, combineDateAndTime(dayDate ?? dateRef.current, time))}
                     />
                     <DisabledIntervals
                         id={rid!}
@@ -707,7 +719,7 @@ const CalendarInner: React.FC<CalendarProps> = (props) => {
                         onLongPress={internalStableOnLongPress}
                         isEventSelected={isEventSelectedStable}
                         isEventDisabled={isEventDisabledStable}
-                        eventRenderer={stableRenderer}
+                        eventRenderer={effectiveRenderer}
                         mode={overLappingLayoutMode}
                     />
                 </View>
@@ -719,14 +731,42 @@ const CalendarInner: React.FC<CalendarProps> = (props) => {
         resourceIds,
         APPOINTMENT_BLOCK_WIDTH,
         hourHeight,
-        stableRenderer,
+        effectiveRenderer,
         isEventSelectedStable,
         isEventDisabledStable,
         overLappingLayoutMode,
         stableOnPress,
         internalStableOnLongPress,
         stableOnDisabledBlockPress,
+        stableHandleBlockPress,
+        stableHandleBlockLongPress,
     ]);
+
+    // FlashList only re-runs `renderItem` for mounted cells when `data` or
+    // `extraData` change — NOT when `renderItem`'s identity changes. So fold every
+    // identity that affects a cell's output into `extraData`; otherwise a predicate
+    // or renderer change rebuilds `renderItem` but the visible columns keep showing
+    // their memoized output until some unrelated re-render happens.
+    const listExtraData = useMemo(
+        () => ({
+            numberOfColumns,
+            width,
+            hourHeight,
+            stacked: overLappingLayoutMode === 'stacked',
+            isEventSelectedStable,
+            isEventDisabledStable,
+            effectiveRenderer,
+        }),
+        [
+            numberOfColumns,
+            width,
+            hourHeight,
+            overLappingLayoutMode,
+            isEventSelectedStable,
+            isEventDisabledStable,
+            effectiveRenderer,
+        ]
+    );
 
     return <>
         <StoreFeeder resources={resources} store={binding} baseDate={date}/>
@@ -804,7 +844,7 @@ const CalendarInner: React.FC<CalendarProps> = (props) => {
                             ref={verticalScrollViewRef}
                         />
                         <AnimatedFlashList
-                            extraData={numberOfColumns + width + hourHeight + (overLappingLayoutMode === 'stacked' ? 1 : 0)}
+                            extraData={listExtraData}
                             scrollEnabled={!selectedEvent}
                             ref={flashListRef}
                             onScroll={flashListScrollHandler}  // Sync with header
