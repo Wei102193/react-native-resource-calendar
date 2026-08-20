@@ -18,14 +18,20 @@ interface DisabledIntervalsProps {
     height: number;
 }
 
+const HATCH_STROKE_COLOR = "rgba(115, 115, 115, 0.85)";
+const HATCH_STROKE_WIDTH = 1;
+const HATCH_BACKGROUND_COLOR = "rgba(120, 120, 120, 0.10)";
+
 const DisabledInterval: React.FC<DisabledIntervalsProps> = ({width, top, height}) => {
     return <View style={[styles.disabledBlock, {width, top, height}]}>
         <Svg width={width} height="100%">
             <Defs>
                 <Pattern id="diagonalHatch" patternUnits="userSpaceOnUse" width="10" height="10">
-                    <Line x1="0" y1="0" x2="10" y2="10" stroke="rgba(150, 150, 150, 0.8)" strokeWidth="1"/>
+                    <Line x1="0" y1="0" x2="10" y2="10" stroke={HATCH_STROKE_COLOR}
+                          strokeWidth={HATCH_STROKE_WIDTH}/>
                 </Pattern>
             </Defs>
+            <Rect width={width} height="100%" fill={HATCH_BACKGROUND_COLOR}/>
             <Rect width={width} height="100%" fill="url(#diagonalHatch)"/>
         </Svg>
     </View>
