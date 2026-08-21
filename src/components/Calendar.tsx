@@ -80,6 +80,11 @@ interface CalendarProps {
         | ((event: Event) => StyleOverrides | undefined);
     isEventSelected?: FlagFn;
     isEventDisabled?: FlagFn;
+    // Return true to lock an event against drag/resize. Unlike `isEventDisabled`,
+    // a locked event stays fully interactive: `onEventPress` and `onEventLongPress`
+    // still fire, but the calendar skips its internal drag setup so no drag ghost
+    // or action bar appears.
+    isEventLocked?: FlagFn;
     // When true, disabled (time-off) blocks are dimmed and pass touches through to
     // the grid beneath, so a "select a time" flow can pick the slot under them.
     disabledBlocksTapThrough?: boolean;
@@ -162,6 +167,11 @@ const CalendarInner: React.FC<CalendarProps> = (props) => {
 
     const isEventDisabledStable = useCallback<FlagFn>(
         (ev) => props.isEventDisabled?.(ev) ?? false, [props.isEventDisabled]);
+
+    // Read from a ref: the long-press handler is installed once in a [] effect,
+    // so a closed-over prop would go stale.
+    const isEventLockedRef = useRef(props.isEventLocked);
+    isEventLockedRef.current = props.isEventLocked;
 
     const stableOnPress = React.useCallback((e: Event) => onPressRef.current?.(e), []);
     const stableOnDisabledBlockPress = React.useCallback((b: DisabledBlock) => onDisabledBlockPressRef.current?.(b), []);
@@ -547,6 +557,10 @@ const CalendarInner: React.FC<CalendarProps> = (props) => {
     useEffect(() => {
         internalOnLongPress.current = (event: Event) => {
             onLongPressRef.current?.(event);
+
+            // Locked event -> notify the consumer above, then stop before any
+            // selection/drag state is touched.
+            if (isEventLockedRef.current?.(event)) return;
 
             // --- Compute vertical placement ---
             const hh = hourHeightRef.current;
