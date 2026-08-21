@@ -1,8 +1,9 @@
 import {Event, EventRenderContext} from "react-native-resource-calendar";
 import React from "react";
-import {Heart, MessageCircleMore} from "lucide-react-native";
+import {Heart, Lock, MessageCircleMore} from "lucide-react-native";
 import {isEmpty} from "lodash";
 import {View} from "react-native";
+import {isEventLocked} from "@/utilities/helpers";
 
 interface EventTopRightProps {
     event: Event;
@@ -18,6 +19,9 @@ const EventTopRight: React.FC<EventTopRightProps> = ({event, ctx}) => {
             {
                 !isEmpty(event?.meta?.note) &&
                 <MessageCircleMore size={14}/>
+            }
+            {
+                isEventLocked(event) && <Lock size={14} color={"#6b7280"}/>
             }
         </View>
     );

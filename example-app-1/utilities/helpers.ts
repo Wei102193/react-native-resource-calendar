@@ -1,3 +1,5 @@
+import {Event} from "react-native-resource-calendar";
+
 export const statusColor = (status: number) => {
     switch (status) {
         case 1:
@@ -14,3 +16,10 @@ export const statusColor = (status: number) => {
             return "#7f8c8d"; // Default - Gray
     }
 }
+
+// Statuses that represent finished business — these bookings can still be
+// tapped, but must not be dragged or resized on the timeline.
+const LOCKED_STATUSES = [3, 5]; // 3 = Cancelled, 5 = Completed
+
+export const isEventLocked = (event: Event): boolean =>
+    LOCKED_STATUSES.includes(event?.meta?.status);
