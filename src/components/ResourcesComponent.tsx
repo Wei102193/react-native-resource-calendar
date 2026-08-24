@@ -6,15 +6,32 @@ import Hidden from './common/layout/Hidden';
 import Center from './common/layout/Center';
 import Badge from './common/Badge';
 import Col from './common/layout/Col';
-import {Resource} from '@/types/calendarTypes';
+import {Resource, ResourceRenderContext} from '@/types/calendarTypes';
 import {useCalendarBinding} from "@/store/bindings/BindingProvider";
 import {useResolvedFont} from "@/theme/ThemeContext";
+
+export type ResourceSlotProps = {
+    resource: Resource;
+    ctx: ResourceRenderContext;
+};
+
+export type ResourceSlots = {
+    /** Replaces the default avatar circle. */
+    Avatar?: React.ComponentType<ResourceSlotProps>;
+    /** Adornment pinned to the avatar's top-right corner (replaces nothing — it overlays). */
+    TopRight?: React.ComponentType<ResourceSlotProps>;
+    /** Replaces the resource name text. */
+    Label?: React.ComponentType<ResourceSlotProps>;
+    /** Extra content rendered below the label. */
+    Bottom?: React.ComponentType<ResourceSlotProps>;
+};
 
 type Props = {
     resourceIds: number[];
     APPOINTMENT_BLOCK_WIDTH: number;
     onResourcePress?: (resource: Resource) => void;
     date: Date;
+    slots?: ResourceSlots;
 };
 
 type ResourceComponentProps = {
@@ -22,44 +39,81 @@ type ResourceComponentProps = {
     APPOINTMENT_BLOCK_WIDTH: number;
     onResourcePress?: (resource: Resource) => void;
     date: Date;
+    slots?: ResourceSlots;
 }
 
-const ResourceComponent = ({id, onResourcePress, APPOINTMENT_BLOCK_WIDTH, date}: ResourceComponentProps) => {
+const ResourceComponent = ({id, onResourcePress, APPOINTMENT_BLOCK_WIDTH, date, slots}: ResourceComponentProps) => {
     const {useResourceById, useEventsFor} =
         useCalendarBinding();
     const resource = useResourceById(id);
     const events = useEventsFor(id, date);
     const titleFace = useResolvedFont({fontWeight: '700'});
 
+    // `resourcesById` is populated by StoreFeeder in an effect, so the first
+    // render has no resource yet. Fall back to the defaults (which tolerate an
+    // undefined resource) rather than handing `undefined` to a consumer slot.
+    const activeSlots = resource ? slots : undefined;
+    const Avatar = activeSlots?.Avatar;
+    const TopRight = activeSlots?.TopRight;
+    const Label = activeSlots?.Label;
+    const Bottom = activeSlots?.Bottom;
+
+    const ctx: ResourceRenderContext = {
+        width: APPOINTMENT_BLOCK_WIDTH,
+        date,
+        eventCount: events?.length ?? 0,
+    };
+
+    const handlePress = () => {
+        if (onResourcePress)
+            onResourcePress(resource);
+    };
+
     return <Col style={[{
         alignItems: 'center',
         width: APPOINTMENT_BLOCK_WIDTH,
     }]}>
         <View style={{position: "relative"}}>
-            <StaffAvatar
-                onPress={() => {
-                    if (onResourcePress)
-                        onResourcePress(resource);
-                }}
-                name={resource?.name}
-                circleSize={Math.min(40, APPOINTMENT_BLOCK_WIDTH - 12)}
-                fontSize={16}
-                badge={events?.length}
-                image={resource?.avatar}
-            />
+            {
+                Avatar
+                    ? <TouchableOpacity
+                        disabled={isUndefined(onResourcePress)}
+                        onPress={handlePress}
+                    >
+                        <Avatar resource={resource} ctx={ctx}/>
+                    </TouchableOpacity>
+                    : <StaffAvatar
+                        onPress={handlePress}
+                        name={resource?.name}
+                        circleSize={Math.min(40, APPOINTMENT_BLOCK_WIDTH - 12)}
+                        fontSize={16}
+                        badge={TopRight ? undefined : events?.length}
+                        image={resource?.avatar}
+                    />
+            }
+            {
+                TopRight && <View style={{position: "absolute", right: -4, top: -6, zIndex: 1}}>
+                    <TopRight resource={resource} ctx={ctx}/>
+                </View>
+            }
         </View>
-        <Text style={{
-            fontSize: 14,
-            fontFamily: titleFace,
-            fontWeight: '700',
-        }}
-              numberOfLines={1}
-              allowFontScaling={false}
-        >{resource?.name}</Text>
+        {
+            Label
+                ? <Label resource={resource} ctx={ctx}/>
+                : <Text style={{
+                    fontSize: 14,
+                    fontFamily: titleFace,
+                    fontWeight: '700',
+                }}
+                        numberOfLines={1}
+                        allowFontScaling={false}
+                >{resource?.name}</Text>
+        }
+        {Bottom && <Bottom resource={resource} ctx={ctx}/>}
     </Col>
 }
 
-export const ResourcesComponent = ({resourceIds, onResourcePress, APPOINTMENT_BLOCK_WIDTH, date}: Props) => {
+export const ResourcesComponent = ({resourceIds, onResourcePress, APPOINTMENT_BLOCK_WIDTH, date, slots}: Props) => {
     return (
         <>
             {resourceIds?.map((id) => {
@@ -69,6 +123,7 @@ export const ResourcesComponent = ({resourceIds, onResourcePress, APPOINTMENT_BL
                     id={id}
                     APPOINTMENT_BLOCK_WIDTH={APPOINTMENT_BLOCK_WIDTH}
                     onResourcePress={onResourcePress}
+                    slots={slots}
                 />
             })}
         </>

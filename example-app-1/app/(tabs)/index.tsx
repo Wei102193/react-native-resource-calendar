@@ -4,6 +4,7 @@ import {Calendar, DraggedEventDraft, Event, LayoutMode, useCalendarBinding} from
 import {SafeAreaView} from "react-native-safe-area-context";
 import {ThemedText} from "@/components/ThemedText";
 import EventTopRight from "@/components/EventTopRight";
+import {ResourceBottom, ResourceLabel, ResourceTopRight} from "@/components/ResourceHeaderSlots";
 import {FontAwesome} from "@expo/vector-icons";
 import {isEventLocked, statusColor} from "@/utilities/helpers";
 import {resourceData} from "@/assets/fakeData";
@@ -102,6 +103,13 @@ export default function HomeScreen() {
                 eventSlots={{
                     // Body: ({event, ctx}) => <EventBody event={event} ctx={ctx}/>,
                     TopRight: ({event, ctx}) => <EventTopRight event={event} ctx={ctx}/>,
+                }}
+                resourceSlots={{
+                    // `Avatar` is available too — omitted here so the default
+                    // avatar circle keeps rendering.
+                    TopRight: ({resource, ctx}) => <ResourceTopRight resource={resource} ctx={ctx}/>,
+                    Label: ({resource, ctx}) => <ResourceLabel resource={resource} ctx={ctx}/>,
+                    Bottom: ({resource, ctx}) => <ResourceBottom resource={resource} ctx={ctx}/>,
                 }}
                 eventStyleOverrides={eventStyleOverrides}
                 overLappingLayoutMode={layoutMode}

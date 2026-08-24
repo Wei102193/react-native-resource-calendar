@@ -22,8 +22,8 @@ export const StoreFeeder: React.FC<Props> = ({store, resources, baseDate}) => {
 
     useEffect(() => {
         setDate(baseDate);
-        // 1) Directory of resources (id/name/avatar only)
-        upsertResources(resources.map(r => ({id: r.id, name: r.name, avatar: r.avatar})));
+        // 1) Directory of resources (identity fields only — day data is bucketed below)
+        upsertResources(resources.map(r => ({id: r.id, name: r.name, avatar: r.avatar, meta: r.meta})));
 
         // 2) Build single-day per-resource maps
         const dayBuckets = new Map<

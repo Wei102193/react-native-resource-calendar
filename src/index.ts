@@ -10,5 +10,9 @@ export type {
     DraggedEventDraft,
     LayoutMode,
     EventRenderContext,
+    ResourceRenderContext,
     CalendarMode
 } from "./types/calendarTypes";
+
+export type {EventSlots, EventRenderer, StyleOverrides} from "./components/EventBlock";
+export type {ResourceSlots, ResourceSlotProps} from "./components/ResourcesComponent";

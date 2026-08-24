@@ -33,6 +33,10 @@ export type Resource = {
     id: ResourceId;
     name: string;
     avatar?: string;
+    /** Arbitrary consumer data, carried through to `resourceSlots` renderers. */
+    meta?: {
+        [key: string]: any;
+    }
 };
 
 export type DraggedEventDraft = {
@@ -57,3 +61,12 @@ export type EventRenderContext = {
 };
 
 export type CalendarMode = 'day' | '3days' | 'week';
+
+export type ResourceRenderContext = {
+    /** Width of the resource header column, in px. */
+    width: number;
+    /** Day the header is rendered for. */
+    date: Date;
+    /** Number of events the resource has on `date`. */
+    eventCount: number;
+};

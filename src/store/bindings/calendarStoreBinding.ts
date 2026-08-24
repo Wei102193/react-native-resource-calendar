@@ -27,7 +27,7 @@ export type CalendarStoreBinding = {
     useDisabledIntervalsFor: (resourceId: ResourceId, dayDate: Date) => ReadonlyArray<DisabledInterval>;
 
     // Actions
-    useUpsertResources: () => (rs: Array<Pick<Resource, 'id' | 'name' | 'avatar'>>) => void;
+    useUpsertResources: () => (rs: Array<Pick<Resource, 'id' | 'name' | 'avatar' | 'meta'>>) => void;
     useSetDayDataFor: () => (dayKey: DayKey, payload: SetDayDataPayload) => void;
 
     useGetSelectedEvent: () => Event | null;

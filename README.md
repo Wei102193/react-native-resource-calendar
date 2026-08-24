@@ -8,7 +8,7 @@ Expo compatibility.
 ## ✨ Features
 
 - ✅ Multi-resource/multi-days timeline layout
-- 🎨 Customizable event slots (Body, TopRight)
+- 🎨 Customizable event slots (Body, TopRight) and resource header slots (Avatar, Label, TopRight, Bottom)
 - 📱 Smooth Reanimated drag-and-drop
 - 🪶 Lightweight and Expo-ready
 
@@ -286,6 +286,7 @@ The `Calendar` component accepts a flexible set of props for customizing layout,
 | **`enableHapticFeedback`**  | `boolean`                                                                                                        | `false`                 | Enable haptic feedback.                                                                                                                 |
 | **`eventSlots`**            | `EventSlots`                                                                                                     | —                       | Slot renderers to customize event content (e.g. `{ Body, TopRight }`).                                                                  |
 | **`eventStyleOverrides`**   | `StyleOverrides \| ((event: Event) => StyleOverrides \| undefined)`                                              | —                       | Per-event style override (object or function).                                                                                          |
+| **`resourceSlots`**         | `ResourceSlots`                                                                                                  | —                       | Slot renderers to customize the resource header (e.g. `{ Avatar, Label, TopRight, Bottom }`).                                            |
 | **`isEventSelected`**       | `(event: Event) => boolean`                                                                                      | `() => false`           | Marks which events are currently selected.                                                                                              |
 | **`isEventDisabled`**       | `(event: Event) => boolean`                                                                                      | `() => false`           | Marks events as disabled (non-interactive).                                                                                             |
 | **`isEventLocked`**         | `(event: Event) => boolean`                                                                                      | `() => false`           | Return `true` to lock that event against drag/resize. Unlike `isEventDisabled`, a locked event stays tappable — `onEventPress` and `onEventLongPress` still fire — but the calendar skips its internal drag setup, so no drag ghost or action bar appears. |
@@ -337,6 +338,9 @@ type Resource = {
     id: ResourceId;
     name: string;
     avatar?: string;
+    meta?: {           // arbitrary consumer data, carried through to `resourceSlots`
+        [key: string]: any;
+    };
 };
 
 type DraggedEventDraft = {
@@ -354,7 +358,100 @@ type CalendarTheme = {
 };
 
 type CalendarMode = 'day' | '3days' | 'week';
+
+type ResourceRenderContext = {
+    width: number;     // width of the resource header column, in px
+    date: Date;        // day the header is rendered for
+    eventCount: number; // events the resource has on `date`
+};
+
+type ResourceSlotProps = {
+    resource: Resource;
+    ctx: ResourceRenderContext;
+};
+
+type ResourceSlots = {
+    Avatar?: React.ComponentType<ResourceSlotProps>;   // replaces the default avatar circle
+    TopRight?: React.ComponentType<ResourceSlotProps>; // overlays the avatar's top-right corner
+    Label?: React.ComponentType<ResourceSlotProps>;    // replaces the resource name text
+    Bottom?: React.ComponentType<ResourceSlotProps>;   // extra content under the label
+};
 ```
+
+---
+
+### 🧑‍🤝‍🧑 Resource Header Slots
+
+`resourceSlots` customizes the resource header the same way `eventSlots` customizes an event. Every slot is
+optional — omit one and the default rendering stays.
+
+```tsx
+<Calendar
+    resources={resources}
+    date={date}
+    resourceSlots={{
+        // Replace the default avatar circle
+        Avatar: ({resource, ctx}) => (
+            <Image
+                source={{uri: resource.avatar}}
+                style={{width: ctx.width - 12, height: ctx.width - 12, borderRadius: 999}}
+            />
+        ),
+        // Overlays the avatar's top-right corner. Providing this replaces the
+        // built-in event-count badge.
+        TopRight: ({ctx}) => (
+            <View style={styles.dot}>
+                <Text style={styles.dotText}>{ctx.eventCount}</Text>
+            </View>
+        ),
+        // Replace the name text
+        Label: ({resource}) => (
+            <Text numberOfLines={1} style={styles.name}>{resource.name}</Text>
+        ),
+        // Additive: rendered under the label
+        Bottom: ({resource, ctx}) => (
+            <Text style={styles.role}>{resource.meta?.role} · {ctx.eventCount} booked</Text>
+        ),
+    }}
+/>
+```
+
+#### Passing your own data
+
+`Resource` carries an optional `meta` bag, exactly like `Event` does. Put whatever your slots need on it and
+read it back off the `resource` argument:
+
+```tsx
+const resources = [
+    {
+        id: 1,
+        name: "Alice Johnson",
+        avatar: "https://…",
+        meta: {role: "Physio", isSenior: true, color: "#4d959c"},
+        events: [...],
+    },
+];
+
+<Calendar
+    resources={resources}
+    resourceSlots={{
+        Label: ({resource}) => (
+            <Text style={{color: resource.meta?.color}}>
+                {resource.meta?.isSenior ? "★ " : ""}{resource.name}
+            </Text>
+        ),
+    }}
+/>
+```
+
+Notes:
+
+- In `'3days'` / `'week'` mode the header collapses to the single active resource, where only `Avatar` and
+  `TopRight` apply (there is no name label in that layout).
+- `onResourcePress` still fires when a custom `Avatar` is tapped — you don't need to wire your own touchable.
+- `meta` is compared one level deep when syncing to the store, so rebuilding the object literal each render
+  (`meta: {role}`) won't churn re-renders. Nested objects are compared by reference — hoist those if they're
+  large.
 
 ---
 

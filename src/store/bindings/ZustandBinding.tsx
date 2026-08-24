@@ -17,6 +17,19 @@ import {format} from "date-fns";
 type ByResource<T> = Record<ResourceId, T[]>;
 type ByDay<T> = Record<string, ByResource<T>>;
 
+// Consumers commonly rebuild `meta` object literals on every render, so a
+// reference compare would mark every resource dirty and re-render all headers.
+// One level of key comparison keeps unchanged resources referentially stable.
+const isSameMeta = (a?: Resource['meta'], b?: Resource['meta']): boolean => {
+    if (a === b) return true;
+    if (!a || !b) return false;
+
+    const aKeys = Object.keys(a);
+    if (aKeys.length !== Object.keys(b).length) return false;
+
+    return aKeys.every((key) => a[key] === b[key]);
+};
+
 type State = {
     date: Date;
     resourcesById: Record<ResourceId, Resource>;
@@ -29,7 +42,7 @@ type State = {
     disabledIntervalsByDay: ByDay<DisabledInterval>;
 
     // Actions
-    upsertResources: (rs: Array<Pick<Resource, 'id' | 'name' | 'avatar'>>) => void;
+    upsertResources: (rs: Array<Pick<Resource, 'id' | 'name' | 'avatar' | 'meta'>>) => void;
     setDayDataFor: (dayKey: string, payload: SetDayDataPayload) => void;
     setSelectedEvent: (evt: Event | null) => void;
     setDraggedEventDraft: (draft: DraggedEventDraft | null) => void;
@@ -60,8 +73,8 @@ const createCalendarStore = () =>
                 for (const r of rs) {
                     const prev = next[r.id];
                     // replace only when identity actually differs
-                    if (!prev || prev.name !== r.name || prev.avatar !== r.avatar) {
-                        next[r.id] = {id: r.id, name: r.name, avatar: r.avatar};
+                    if (!prev || prev.name !== r.name || prev.avatar !== r.avatar || !isSameMeta(prev.meta, r.meta)) {
+                        next[r.id] = {id: r.id, name: r.name, avatar: r.avatar, meta: r.meta};
                         changed = true;
                     }
                 }

@@ -16,6 +16,7 @@ export const resourceData = [
     {
         id: 1,
         name: "Alice Johnson",
+        meta: {role: "Physio", isSenior: true},
         avatar: "https://randomuser.me/api/portraits/women/11.jpg",
         events: [
             {
@@ -67,6 +68,7 @@ export const resourceData = [
     {
         id: 2,
         name: "Bob Martinez",
+        meta: {role: "Massage", isSenior: false},
         avatar: "https://randomuser.me/api/portraits/men/22.jpg",
         events: [
             {
@@ -107,6 +109,7 @@ export const resourceData = [
     {
         id: 3,
         name: "Charlie Kim",
+        meta: {role: "Chiro", isSenior: false},
         avatar: "https://randomuser.me/api/portraits/men/33.jpg",
         events: [
             {
@@ -143,6 +146,7 @@ export const resourceData = [
     {
         id: 4,
         name: "Diana Ross",
+        meta: {role: "Physio", isSenior: true},
         avatar: "https://randomuser.me/api/portraits/women/44.jpg",
         events: [
             {
@@ -172,6 +176,7 @@ export const resourceData = [
     {
         id: 5,
         name: "Evan Lee",
+        meta: {role: "Acupuncture", isSenior: false},
         avatar: "https://randomuser.me/api/portraits/men/55.jpg",
         events: [
             {
@@ -203,6 +208,7 @@ export const resourceData = [
     {
         id: 6,
         name: "Fatima Noor",
+        meta: {role: "Massage", isSenior: false},
         avatar: "https://randomuser.me/api/portraits/women/66.jpg",
         events: [
             {
@@ -241,6 +247,7 @@ export const resourceData = [
     {
         id: 7,
         name: "George Patel",
+        meta: {role: "Chiro", isSenior: false},
         avatar: "https://randomuser.me/api/portraits/men/77.jpg",
         events: [
             {

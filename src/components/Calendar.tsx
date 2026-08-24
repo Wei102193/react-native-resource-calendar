@@ -20,7 +20,7 @@ import {
     TIME_LABEL_WIDTH
 } from '@/utilities/helpers';
 import {TimeLabels} from './TimeLabels';
-import {ResourcesComponent} from "./ResourcesComponent";
+import {ResourcesComponent, ResourceSlots} from "./ResourcesComponent";
 import {EventGridBlocksSkia} from "./EventGridBlocks";
 import {
     CalendarMode,
@@ -75,6 +75,7 @@ interface CalendarProps {
     onEventLongPress?: (event: Event) => void;
     enableHapticFeedback?: boolean;
     eventSlots?: EventSlots;
+    resourceSlots?: ResourceSlots;
     eventStyleOverrides?:
         | StyleOverrides
         | ((event: Event) => StyleOverrides | undefined);
@@ -128,6 +129,7 @@ const CalendarInner: React.FC<CalendarProps> = (props) => {
         onDisabledBlockPress,
         enableHapticFeedback = false,
         eventSlots,
+        resourceSlots,
         eventStyleOverrides,
         overLappingLayoutMode = 'stacked',
         mode = 'day',
@@ -813,6 +815,7 @@ const CalendarInner: React.FC<CalendarProps> = (props) => {
                                 resourceIds={resourceIds}
                                 APPOINTMENT_BLOCK_WIDTH={APPOINTMENT_BLOCK_WIDTH}
                                 onResourcePress={onResourcePress}
+                                slots={resourceSlots}
                             />
                         </Animated.ScrollView>
                     </View>
@@ -822,6 +825,7 @@ const CalendarInner: React.FC<CalendarProps> = (props) => {
                         mode={mode}
                         activeResourceId={activeResourceId ?? resourceIds[0]}
                         onResourcePress={onResourcePress}
+                        slots={resourceSlots}
                     />
             }
             <GestureDetector gesture={panGesture}>
