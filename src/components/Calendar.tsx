@@ -2,6 +2,7 @@ import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {Gesture, GestureDetector} from "react-native-gesture-handler";
 import {scheduleOnRN} from 'react-native-worklets';
 import Animated, {
+    FrameInfo,
     scrollTo,
     useAnimatedRef,
     useAnimatedScrollHandler,
@@ -12,7 +13,6 @@ import Animated, {
 import {Dimensions, LayoutChangeEvent, Platform, StyleSheet, useWindowDimensions, View} from "react-native";
 import {FlashList, FlashListRef} from "@shopify/flash-list";
 import {
-    combineDateAndTime,
     findDayIndexFor,
     findResourceIndexFor,
     positionToMinutes,
@@ -108,7 +108,7 @@ type Layout = {
 const AnimatedFlashList = Animated.createAnimatedComponent(FlashList);
 const DEFAULT_TIMEZONE = Intl?.DateTimeFormat()?.resolvedOptions()?.timeZone;
 
-const CalendarInner: React.FC<CalendarProps> = (props) => {
+const CalendarInner: React.FC<CalendarProps> = React.memo((props) => {
     const {width} = useWindowDimensions();
     const isIOS = Platform.OS === 'ios';
     const binding = useCalendarBinding();
@@ -476,12 +476,13 @@ const CalendarInner: React.FC<CalendarProps> = (props) => {
             scheduleOnRN(finalizeDrag, colIndex, adjustedFinalEventTop, eventHeight.value);
         });
 
-    const scrollListTo = (x: number) => {
+    const scrollListTo = useCallback((x: number) => {
         flashListRef.current?.scrollToOffset({offset: x, animated: false});
-    };
+    }, []);
 
     // Auto-scrolling x effect when dragging an appointment on the edge of the screen
-    useFrameCallback((frameInfo) => {
+    const autoScrollXFrame = useCallback((frameInfo: FrameInfo) => {
+        'worklet';
         if (autoScrollXSpeed.value === 0) {
             return;
         }
@@ -502,9 +503,10 @@ const CalendarInner: React.FC<CalendarProps> = (props) => {
             // Trigger a haptic on each scroll jump
             scheduleOnRN(triggerHaptic, "Medium");
         }
-    });
+    }, [APPOINTMENT_BLOCK_WIDTH, scrollListTo, triggerHaptic]);
 
-    useFrameCallback(() => {
+    const autoScrollYFrame = useCallback(() => {
+        'worklet';
         // Exit if we are not dragging or not supposed to be scrolling
         if (autoScrollSpeed.value === 0) {
             return;
@@ -554,7 +556,19 @@ const CalendarInner: React.FC<CalendarProps> = (props) => {
             lastHapticScrollY.value = newScrollY;
             scheduleOnRN(triggerHaptic, "Medium");
         }
-    });
+    }, [snapInterval, hourHeight, triggerHaptic]);
+
+    // Start both frame callbacks inactive and only run them while an event is
+    // selected — otherwise they tick on every single frame for the whole
+    // lifetime of the calendar just to read a shared value and bail out.
+    const autoScrollXCallback = useFrameCallback(autoScrollXFrame, false);
+    const autoScrollYCallback = useFrameCallback(autoScrollYFrame, false);
+
+    useEffect(() => {
+        const active = !!selectedEvent;
+        autoScrollXCallback.setActive(active);
+        autoScrollYCallback.setActive(active);
+    }, [selectedEvent, autoScrollXCallback, autoScrollYCallback]);
 
     useEffect(() => {
         internalOnLongPress.current = (event: Event) => {
@@ -711,10 +725,13 @@ const CalendarInner: React.FC<CalendarProps> = (props) => {
                 {/* Add 15-minute background blocks for each user column */}
                 <View style={styles.timelineContainer}>
                     <EventGridBlocksSkia
+                        rid={rid!}
+                        dayDate={dayDate}
+                        dateRef={dateRef}
                         hourHeight={hourHeight}
                         APPOINTMENT_BLOCK_WIDTH={APPOINTMENT_BLOCK_WIDTH}
-                        handleBlockPress={(time) => stableHandleBlockPress(rid, combineDateAndTime(dayDate ?? dateRef.current, time))}
-                        handleBlockLongPress={(time) => stableHandleBlockLongPress(rid, combineDateAndTime(dayDate ?? dateRef.current, time))}
+                        onBlockPress={stableHandleBlockPress}
+                        onBlockLongPress={stableHandleBlockLongPress}
                     />
                     <DisabledIntervals
                         id={rid!}
@@ -900,15 +917,15 @@ const CalendarInner: React.FC<CalendarProps> = (props) => {
             </GestureDetector>
         </View>
     </>
-}
+});
 
-const Calendar: React.FC<CalendarProps> = ({theme, ...rest}) => {
+const Calendar: React.FC<CalendarProps> = React.memo(({theme, ...rest}) => {
     return (
         <CalendarThemeProvider theme={theme}>
             <CalendarInner {...rest} />
         </CalendarThemeProvider>
     );
-};
+});
 
 const styles = StyleSheet.create({
     container: {

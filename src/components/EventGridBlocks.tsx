@@ -4,20 +4,44 @@ import {View} from 'react-native';
 import {Canvas, Line, Rect} from '@shopify/react-native-skia';
 import {Gesture, GestureDetector} from 'react-native-gesture-handler';
 import {scheduleOnRN} from 'react-native-worklets';
+import {ResourceId} from '../types/calendarTypes';
+import {combineDateAndTime} from '../utilities/helpers';
 
 type Props = {
-    handleBlockPress: (time: string) => void;
-    handleBlockLongPress: (time: string) => void;
+    /** Resource this column belongs to. */
+    rid: ResourceId;
+    /** Day this column represents (multi-day modes); falls back to `dateRef`. */
+    dayDate?: Date;
+    /** Latest base date, kept in a ref so it never invalidates this component. */
+    dateRef: React.RefObject<Date>;
+    onBlockPress: (resourceId: ResourceId, isoDateTime: string) => void;
+    onBlockLongPress: (resourceId: ResourceId, isoDateTime: string) => void;
     APPOINTMENT_BLOCK_WIDTH: number;
     hourHeight: number;
 };
 
-export const EventGridBlocksSkia: React.FC<Props> = ({
-                                                         handleBlockPress,
-                                                         handleBlockLongPress,
-                                                         hourHeight,
-                                                         APPOINTMENT_BLOCK_WIDTH
-                                                     }) => {
+export const EventGridBlocksSkia: React.FC<Props> = React.memo(({
+                                                                    rid,
+                                                                    dayDate,
+                                                                    dateRef,
+                                                                    onBlockPress,
+                                                                    onBlockLongPress,
+                                                                    hourHeight,
+                                                                    APPOINTMENT_BLOCK_WIDTH
+                                                                }) => {
+    // Compare the day by value: the parent may hand us a fresh Date instance
+    // for the same day on every render.
+    const dayKey = dayDate ? dayDate.getTime() : null;
+
+    const handleBlockPress = React.useCallback(
+        (time: string) => onBlockPress(rid, combineDateAndTime(dayDate ?? dateRef.current, time)),
+        [onBlockPress, rid, dayKey, dateRef]
+    );
+    const handleBlockLongPress = React.useCallback(
+        (time: string) => onBlockLongPress(rid, combineDateAndTime(dayDate ?? dateRef.current, time)),
+        [onBlockLongPress, rid, dayKey, dateRef]
+    );
+
     const rowHeight = hourHeight / 4;
     const [pressedRow, setPressedRow] = React.useState<number | null>(null);
 
@@ -178,4 +202,4 @@ export const EventGridBlocksSkia: React.FC<Props> = ({
             </View>
         </GestureDetector>
     );
-};
+});
