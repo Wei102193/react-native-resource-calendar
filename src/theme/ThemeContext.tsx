@@ -1,5 +1,5 @@
 // store/themeContext.ts
-import React, {createContext, useContext} from 'react';
+import React, {createContext, useContext, useMemo} from 'react';
 import {CalendarTheme} from "@/types/calendarTypes";
 import {FontWeightRN, resolveFont} from "@/theme/resolveFont";
 
@@ -29,11 +29,14 @@ export const CalendarThemeProvider: React.FC<{
     theme?: CalendarTheme;
     children: React.ReactNode;
 }> = ({theme, children}) => {
-    const mergedTheme = {
+    // Memoised so the context value keeps a stable identity — otherwise every
+    // provider render invalidates all `useCalendarTheme` / `useResolvedFont`
+    // consumers (every event block, every time label).
+    const mergedTheme = useMemo<CalendarTheme>(() => ({
         ...defaultTheme,
         ...theme,
         typography: {...defaultTheme.typography, ...theme?.typography},
-    };
+    }), [theme]);
 
     return <ThemeCtx.Provider value={mergedTheme}>{children}</ThemeCtx.Provider>;
 };

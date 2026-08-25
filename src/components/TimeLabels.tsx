@@ -56,7 +56,9 @@ export const TimeLabels = React.forwardRef(({
         };
 
         update();
-        const intervalId = setInterval(update, 300);
+        // 1s is enough for a minute-resolution indicator; 300ms was re-rendering
+        // the whole time column ~3x/second for no visible gain.
+        const intervalId = setInterval(update, 1000);
 
         return () => clearInterval(intervalId);
     }, [timezone]);

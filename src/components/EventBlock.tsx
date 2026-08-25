@@ -77,13 +77,16 @@ const EventBlock: React.FC<EventBlockProps> = React.memo(({
     const handlePress = useCallback(() => onPress?.(event), [onPress, event]);
     const handleLongPress = useCallback(() => onLongPress?.(event), [onLongPress, event]);
 
+    // Hooks must run before the early return below, otherwise the hook order
+    // changes when a zero-height event mounts/unmounts.
+    const titleFace = useResolvedFont({fontWeight: '700'});
+    const timeFace = useResolvedFont({fontWeight: '600'});
+
     if (eventHeight == 0)
         return null;
 
     const TopRight = slots?.TopRight;
     const Body = slots?.Body;
-    const titleFace = useResolvedFont({fontWeight: '700'});
-    const timeFace = useResolvedFont({fontWeight: '600'});
 
     return (
         <TouchableOpacity
