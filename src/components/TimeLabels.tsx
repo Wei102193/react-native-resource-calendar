@@ -1,7 +1,7 @@
 // @flow
 import * as React from 'react';
-import {useEffect, useRef, useState} from 'react';
-import {InteractionManager, StyleSheet, Text, View} from "react-native";
+import {useEffect, useMemo, useRef, useState} from 'react';
+import {InteractionManager, StyleSheet, Text, TextStyle, View} from "react-native";
 import {
     getCurrentTimeInMinutes,
     getTextSize,
@@ -22,46 +22,78 @@ type Props = {
     totalTimelineWidth: number;
     date: Date;
 };
-export const TimeLabels = React.forwardRef(({
-                                                timezone,
-                                                hourHeight = 120,
-                                                startMinutes = 0,
-                                                totalTimelineWidth,
-                                                date,
-                                                layout
-                                            }: Props, ref: any) => {
+
+// `indexToDate` uses a fixed base day, so the 24 labels never change. Building
+// them meant 48 date-fns `format` calls on every render of the time column.
+let HOUR_LABELS: string[][] | null = null;
+const getHourLabels = (): string[][] => {
+    if (!HOUR_LABELS) {
+        HOUR_LABELS = Array.from({length: 24}, (_, index) => indexToDate(index).split(" "));
+    }
+    return HOUR_LABELS;
+};
+
+const msUntilNextMinute = () => 60_000 - (Date.now() % 60_000);
+
+const msUntilNextLocalMidnight = () => {
+    const now = new Date();
+    const next = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 1);
+    return Math.max(1000, next.getTime() - now.getTime());
+};
+
+export const TimeLabels = React.memo(React.forwardRef(({
+                                                           timezone,
+                                                           hourHeight = 120,
+                                                           startMinutes = 0,
+                                                           totalTimelineWidth,
+                                                           date,
+                                                           layout
+                                                       }: Props, ref: any) => {
+    const [tick, forceTick] = useState(0);
     // Check if the selected date is today
     const isToday = isSameDay(new Date(), date);
-    // Function to update the current time's Y position
-    // State to store the current Y-position of the red line
-    const [currentTimeYPosition, setCurrentTimeYPosition] = useState(timeToYPosition(getCurrentTimeInMinutes(timezone), hourHeight));
-    const [currentTime, setCurrentTime] = useState<string>(format(toZonedTime(new Date(), timezone), 'h:mm'));
+
+    // The two states below exist only to trigger a re-render on each minute tick;
+    // the values actually drawn are derived here at render time. The ticker stops
+    // while another day is on screen, so state alone would paint a stale position
+    // for one frame when switching back to today.
+    const [, setCurrentTimeYPosition] = useState(0);
+    const [, setCurrentTime] = useState<string>('');
+    const currentTimeYPosition = isToday ? timeToYPosition(getCurrentTimeInMinutes(timezone), hourHeight) : 0;
+    const currentTime = isToday ? format(toZonedTime(new Date(), timezone), 'h:mm') : '';
+
     const APPOINTMENT_BLOCK_HEIGHT = hourHeight / 4;
-
-    const updateCurrentTimeYPosition = () => {
-        setCurrentTimeYPosition(timeToYPosition(getCurrentTimeInMinutes(timezone), hourHeight));
-    };
-
-    // Function to update the current time every minute
-    const updateCurrentTime = () => {
-        setCurrentTime(format(toZonedTime(new Date(), timezone), 'h:mm')); // Update the state with the new current time
-    };
 
     const titleFace = useResolvedFont({fontWeight: '700'});
 
     useEffect(() => {
+        if (!isToday) {
+            // Nothing to tick for another day. Re-render once at midnight so a view
+            // of "tomorrow" turns into today on its own.
+            const midnightId = setTimeout(() => forceTick(n => n + 1), msUntilNextLocalMidnight());
+            return () => clearTimeout(midnightId);
+        }
+
         const update = () => {
-            updateCurrentTime();
-            updateCurrentTimeYPosition();
+            setCurrentTime(format(toZonedTime(new Date(), timezone), 'h:mm'));
+            setCurrentTimeYPosition(timeToYPosition(getCurrentTimeInMinutes(timezone), hourHeight));
         };
 
         update();
-        // 1s is enough for a minute-resolution indicator; 300ms was re-rendering
-        // the whole time column ~3x/second for no visible gain.
-        const intervalId = setInterval(update, 1000);
 
-        return () => clearInterval(intervalId);
-    }, [timezone]);
+        // The label and the line are minute-granular; align to the minute boundary
+        // instead of re-rendering the whole time column once a second.
+        let intervalId: ReturnType<typeof setInterval> | null = null;
+        const timeoutId = setTimeout(() => {
+            update();
+            intervalId = setInterval(update, 60_000);
+        }, msUntilNextMinute());
+
+        return () => {
+            clearTimeout(timeoutId);
+            if (intervalId) clearInterval(intervalId);
+        };
+    }, [timezone, hourHeight, isToday, tick]);
 
     const lastScrolledDateRef = useRef<any>(null); // store a key for the last date we scrolled to
 
@@ -75,8 +107,10 @@ export const TimeLabels = React.forwardRef(({
         if (lastScrolledDateRef.current === dateKey) return;
 
         InteractionManager.runAfterInteractions(() => {
+            // Read the clock directly: the ticker above only runs while today is on
+            // screen, so on the way back to today its last value can be minutes old.
             let pos = isToday
-                ? currentTimeYPosition - 240
+                ? timeToYPosition(getCurrentTimeInMinutes(timezone), hourHeight) - 240
                 : timeToYPosition(startMinutes, hourHeight);
 
             if (ref.current) {
@@ -89,33 +123,28 @@ export const TimeLabels = React.forwardRef(({
                 lastScrolledDateRef.current = dateKey;
             }
         });
-    }, [layout, date, isToday, APPOINTMENT_BLOCK_HEIGHT, startMinutes, hourHeight, currentTimeYPosition]);
+    }, [layout, date, isToday, APPOINTMENT_BLOCK_HEIGHT, startMinutes, hourHeight, timezone]);
+
+    const labelStyle = useMemo<TextStyle>(() => ({
+        textAlign: "center",
+        fontFamily: titleFace,
+        fontSize: getTextSize(hourHeight),
+        fontWeight: '700'
+    }), [titleFace, hourHeight]);
+
+    const hourLabels = getHourLabels();
 
     return (
         <>
             <Col>
                 {/* Time labels */}
-                {Array.from({length: 24}).map((_, index) => (
+                {hourLabels.map(([hour, meridiem], index) => (
                     <View key={index} style={[styles.timeLabel, {height: hourHeight}]}>
-                        <Text
-                            allowFontScaling={false}
-                            style={{
-                                textAlign: "center",
-                                fontFamily: titleFace,
-                                fontSize: getTextSize(hourHeight),
-                                fontWeight: '700'
-                            }}>
-                            {indexToDate(index).split(" ")[0]}
+                        <Text allowFontScaling={false} style={labelStyle}>
+                            {hour}
                         </Text>
-                        <Text
-                            allowFontScaling={false}
-                            style={{
-                                textAlign: "center",
-                                fontFamily: titleFace,
-                                fontSize: getTextSize(hourHeight),
-                                fontWeight: '700'
-                            }}>
-                            {indexToDate(index).split(" ")[1]}
+                        <Text allowFontScaling={false} style={labelStyle}>
+                            {meridiem}
                         </Text>
                     </View>
                 ))}
@@ -144,7 +173,7 @@ export const TimeLabels = React.forwardRef(({
             }]}/>}
         </>
     );
-});
+}));
 
 const styles = StyleSheet.create({
     timeLabel: {

@@ -7,14 +7,22 @@ interface RowProps extends ViewProps {
 }
 
 const Row = ({children, divider, space, style, ...props}: RowProps) => {
+    // Fast path: see Col. Without a divider or a gap the old code still mounted a
+    // zero-width spacer View between every pair of children.
+    if (space == null && divider == null) {
+        return <View style={[{flexDirection: "row"}, style]} {...props}>{children}</View>;
+    }
+
+    const items = React.Children.toArray(children);
+    const last = items.length - 1;
+
     return (
         <View style={[{flexDirection: "row"}, style]} {...props}>
-            {React.Children.toArray(children).map((child, index) => (
+            {items.map((child, index) => (
                 <React.Fragment key={index}>
                     {child}
-                    {index !== React.Children.toArray(children).length - 1 &&
-                        divider}
-                    {index !== React.Children.toArray(children).length - 1 &&
+                    {index !== last && divider}
+                    {index !== last && space != null &&
                         <View style={{width: space, height: "100%"}}/>}
                 </React.Fragment>
             ))}

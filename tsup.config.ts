@@ -17,10 +17,8 @@ export default defineConfig({
         "react-native-reanimated",
         "react-native-gesture-handler",
         "@shopify/flash-list",
-        "@shopify/react-native-skia",
         "expo-haptics",
         "expo-image",
-        "react-content-loader",
         "@expo/vector-icons"
     ],
 });

@@ -1,5 +1,5 @@
 import React, {useEffect, useMemo} from 'react';
-import type {CalendarStoreBinding} from './bindings/calendarStoreBinding';
+import {type CalendarStoreBinding, useNoopBindingHook} from './bindings/calendarStoreBinding';
 import {DisabledBlock, DisabledInterval, Event, Resource,} from '@/types/calendarTypes';
 import {format} from "date-fns";
 
@@ -17,6 +17,11 @@ type Props = {
 export const StoreFeeder: React.FC<Props> = ({store, resources, baseDate}) => {
     const upsertResources = store.useUpsertResources();
     const setDayDataFor = store.useSetDayDataFor();
+    // Custom bindings may predate `replaceDayData`; fall back to the per-day
+    // writes. Always call exactly one hook here so the hook count does not depend
+    // on the shape of the binding.
+    const useReplaceDayDataOrNoop = store.useReplaceDayData ?? useNoopBindingHook;
+    const replaceDayData = useReplaceDayDataOrNoop();
     const setDate = store.useSetDate();
     const baseDateKey = useMemo(() => format(baseDate, 'yyyy-MM-dd')!, [baseDate]);
 
@@ -57,10 +62,16 @@ export const StoreFeeder: React.FC<Props> = ({store, resources, baseDate}) => {
             push(r.disableIntervals, "disableIntervals");
         }
 
-        for (const [dayKey, payload] of dayBuckets) {
-            setDayDataFor(dayKey, payload);
+        // One write for the whole feed when the binding supports it: the per-day
+        // loop notified every column subscriber once per day in the batch.
+        if (replaceDayData) {
+            replaceDayData(dayBuckets);
+        } else {
+            for (const [dayKey, payload] of dayBuckets) {
+                setDayDataFor(dayKey, payload);
+            }
         }
-    }, [resources, upsertResources, setDayDataFor, baseDateKey]);
+    }, [resources, upsertResources, setDayDataFor, replaceDayData, baseDateKey]);
 
     return null;
 };
