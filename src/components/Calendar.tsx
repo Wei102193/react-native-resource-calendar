@@ -4,6 +4,7 @@ import {scheduleOnRN} from 'react-native-worklets';
 import Animated, {
     FrameInfo,
     scrollTo,
+    SharedValue,
     useAnimatedRef,
     useAnimatedScrollHandler,
     useFrameCallback,
@@ -21,8 +22,9 @@ import {
 } from '@/utilities/helpers';
 import {TimeLabels} from './TimeLabels';
 import {ResourcesComponent, ResourceSlots} from "./ResourcesComponent";
-import {EventGridBlocksSkia} from "./EventGridBlocks";
+import {ColumnSeparators, GridBackdrop} from "./EventGridBlocks";
 import {
+    CalendarColumn,
     CalendarMode,
     CalendarTheme,
     DisabledBlock,
@@ -33,19 +35,22 @@ import {
 } from '@/types/calendarTypes';
 import {StoreFeeder} from '@/store/StoreFeeder';
 import {useCalendarBinding} from '@/store/bindings/BindingProvider';
-import DisabledIntervals from './DisabledIntervals';
-import DisabledBlocks from './DisabledBlocks';
+import {useNoopBindingHook} from '@/store/bindings/calendarStoreBinding';
+import {HatchCommonContext, HatchLayer, useHatchCommon} from './DisabledIntervals';
 import EventBlock, {EventRenderer, EventSlots, StyleOverrides} from "@/components/EventBlock";
 import {DraggableEvent} from "@/components/DraggableEvent";
 import {CalendarThemeProvider} from "@/theme/ThemeContext";
-import EventBlocks from "@/components/EventBlocks";
+import ColumnCell from "@/components/ColumnCell";
+import {
+    createColumnScrollState,
+    FLING_SETTLE_PX_PER_FRAME,
+    FLING_SETTLE_STABLE_FRAMES,
+    FLING_SETTLE_TIMEOUT_MS
+} from "@/components/columnScrollState";
 import {DaysComponent} from "@/components/DaysComponent";
 import {addDays, format} from 'date-fns';
 
 type FlagFn = (event: Event) => boolean;
-type Column =
-    | { kind: 'resource'; resourceId: number }
-    | { kind: 'day'; dayIndex: number; dayDate: Date };
 type HapticStyle =
     | "Light"
     | "Medium"
@@ -107,6 +112,31 @@ type Layout = {
 
 const AnimatedFlashList = Animated.createAnimatedComponent(FlashList);
 const DEFAULT_TIMEZONE = Intl?.DateTimeFormat()?.resolvedOptions()?.timeZone;
+
+// expo-haptics is an optional peer. Resolve it once and cache the result: the drag
+// gesture fires a haptic on every snap step, and the import used to be re-issued
+// inside the handler each time. A structural type keeps the build (and the emitted
+// .d.ts) working when the package is not installed.
+type HapticsModule = {
+    ImpactFeedbackStyle: Record<HapticStyle, unknown>;
+    impactAsync: (style: unknown) => Promise<void>;
+};
+
+let hapticsPromise: Promise<HapticsModule | null> | null = null;
+
+const getHaptics = (): Promise<HapticsModule | null> => {
+    if (!hapticsPromise) {
+        // @ts-ignore optional peer dependency: it may not be installed at build time
+        hapticsPromise = import('expo-haptics')
+            .then(m => m as unknown as HapticsModule)
+            .catch(() => {
+                // expo-haptics not installed → haptics stay off
+                console.log("Haptics not available, skipping...");
+                return null;
+            });
+    }
+    return hapticsPromise;
+};
 
 const CalendarInner: React.FC<CalendarProps> = React.memo((props) => {
     const {width} = useWindowDimensions();
@@ -234,6 +264,55 @@ const CalendarInner: React.FC<CalendarProps> = React.memo((props) => {
 
     const scrollX = useSharedValue(0);
     const scrollY = useSharedValue(0);
+
+    // Horizontal fling state read by ColumnCell; see columnScrollState.
+    const listScrollStateRef = useRef<ReturnType<typeof createColumnScrollState> | null>(null);
+    if (!listScrollStateRef.current) listScrollStateRef.current = createColumnScrollState();
+    const listScrollState = listScrollStateRef.current;
+    const settleWatchRef = useRef<{
+        frame: { isActive: boolean; setActive: (v: boolean) => void };
+        prev: SharedValue<number>;
+        stable: SharedValue<number>;
+        scrollX: SharedValue<number>;
+        columnWidth: number;
+        numberOfColumns: number;
+    } | null>(null);
+
+    const onFlingStart = useCallback(() => {
+        listScrollState.set(false);
+
+        const w = settleWatchRef.current;
+        if (w) {
+            w.prev.value = w.scrollX.value || 0;
+            w.stable.value = 0;
+            w.frame.setActive(true);
+        }
+
+        if (listScrollState.timer) clearTimeout(listScrollState.timer);
+        listScrollState.timer = setTimeout(() => {
+            listScrollState.timer = null;
+            listScrollState.set(true);
+        }, FLING_SETTLE_TIMEOUT_MS);
+    }, [listScrollState]);
+
+    const onFlingEnd = useCallback(() => {
+        const w = settleWatchRef.current;
+        if (w) {
+            listScrollState.centre = ((w.scrollX.value || 0) / w.columnWidth) + (w.numberOfColumns - 1) / 2;
+            if (w.frame.isActive) w.frame.setActive(false);
+        }
+
+        if (listScrollState.timer) {
+            clearTimeout(listScrollState.timer);
+            listScrollState.timer = null;
+        }
+        listScrollState.set(true);
+    }, [listScrollState]);
+
+    useEffect(() => () => {
+        if (listScrollState.timer) clearTimeout(listScrollState.timer);
+    }, [listScrollState]);
+
     const autoScrollSpeed = useSharedValue(0);
     const autoScrollXSpeed = useSharedValue(0);
     const lastHapticScrollY = useSharedValue(0);
@@ -246,16 +325,16 @@ const CalendarInner: React.FC<CalendarProps> = React.memo((props) => {
 
     const triggerHaptic = useCallback(
         async (style: HapticStyle = "Light") => {
+            // Check the flag first: with haptics off this is the whole cost, where it
+            // used to import the module and only then look at the flag.
+            if (!enableHapticFeedback) return;
+            const haptics = await getHaptics();
+            if (!haptics) return;
             try {
-                const Haptics = await import("expo-haptics");
-
-                const feedbackStyle = Haptics.ImpactFeedbackStyle[style];
-
-                if (enableHapticFeedback)
-                    await Haptics.impactAsync(feedbackStyle);
+                await haptics.impactAsync(haptics.ImpactFeedbackStyle[style]);
             } catch (e) {
-                // expo-haptics not installed → ignore
-                console.log("Haptics not available, skipping...");
+                // Nobody awaits this call; swallow so it cannot become an
+                // unhandled rejection.
             }
         },
         [enableHapticFeedback]
@@ -267,7 +346,9 @@ const CalendarInner: React.FC<CalendarProps> = React.memo((props) => {
 
     const resourceIds = useMemo(() => {
         const ids = resources?.map(item => item?.id) || [];
-        if (JSON.stringify(prevResourceIdsRef.current) !== JSON.stringify(ids)) {
+        const prev = prevResourceIdsRef.current;
+        const same = prev && prev.length === ids.length && prev.every((id, i) => id === ids[i]);
+        if (!same) {
             prevResourceIdsRef.current = ids;
         }
         return prevResourceIdsRef.current;
@@ -297,7 +378,7 @@ const CalendarInner: React.FC<CalendarProps> = React.memo((props) => {
         });
     }, [mode, resourceIds, activeResourceId, selectedEvent, hourHeight, setDraggedEventDraft, days, date]);
 
-    const columns: Column[] = useMemo(() => {
+    const columns: CalendarColumn[] = useMemo(() => {
         if (!isMultiDay) {
             // Day mode: one day x multiple resources (keep current behavior)
             return resourceIds.map(resourceId => ({kind: 'resource', resourceId}));
@@ -651,16 +732,75 @@ const CalendarInner: React.FC<CalendarProps> = React.memo((props) => {
         },
     });
 
-    const flashListScrollHandler = useAnimatedScrollHandler({
-        onScroll: (event) => {
-            if (!isMultiDay) {
-                const offsetX = event?.contentOffset?.x;
-                // Sync header without going through JS
-                scrollTo(headerScrollViewRef, offsetX, 0, false);
-                scrollX.value = offsetX;
-            }
-        },
-    });
+    // UI-thread settle watch: while a fling is in progress, sample scrollX once per UI
+    // frame and declare the list settled as soon as it is visually still (see
+    // FLING_SETTLE_*). `useFrameCallback` runs exactly once per frame; a
+    // requestAnimationFrame loop inside a worklet did NOT — successive callbacks ran
+    // back-to-back within one frame and declared "stable" instantly. Started from
+    // onFlingStart and stopped from onFlingEnd, both on the JS thread; MomentumEnd and
+    // the fallback timer remain as safety nets.
+    const settleWatchPrev = useSharedValue(0);
+    const settleWatchStable = useSharedValue(0);
+    const settleWatch = useFrameCallback(() => {
+        'worklet';
+        const x = scrollX.value || 0;
+        settleWatchStable.value = Math.abs(x - settleWatchPrev.value) < FLING_SETTLE_PX_PER_FRAME
+            ? settleWatchStable.value + 1
+            : 0;
+        settleWatchPrev.value = x;
+
+        if (settleWatchStable.value >= FLING_SETTLE_STABLE_FRAMES) {
+            settleWatchStable.value = 0;
+            scheduleOnRN(onFlingEnd);
+        }
+    }, false);
+    settleWatchRef.current = {
+        frame: settleWatch,
+        prev: settleWatchPrev,
+        stable: settleWatchStable,
+        scrollX,
+        columnWidth: APPOINTMENT_BLOCK_WIDTH,
+        numberOfColumns,
+    };
+
+    const flashListScrollHandler = useAnimatedScrollHandler(
+        Object.assign(
+            {
+                onScroll: (event: any) => {
+                    'worklet';
+                    const offsetX = event?.contentOffset?.x;
+                    // ColumnSeparators and HatchLayer follow scrollX in every mode; only the
+                    // header avatar row is day-mode only.
+                    scrollX.value = offsetX;
+                    if (!isMultiDay) {
+                        // Sync header without going through JS
+                        scrollTo(headerScrollViewRef, offsetX, 0, false);
+                    }
+                },
+            },
+            Platform.OS === 'android' ? {
+                // Android only. Registering these keys is what makes Reanimated ask the
+                // native ScrollView for momentum events (sendMomentumEvents); iOS mounts a
+                // column within the frame, so there is nothing to gate. The finger leaving
+                // the screen is the reliable signal (RN Android emits onScrollEndDrag on
+                // every ACTION_UP while dragging); MomentumBegin additionally covers
+                // programmatic flings. Both are idempotent on the JS side.
+                onEndDrag: () => {
+                    'worklet';
+                    scheduleOnRN(onFlingStart);
+                },
+                onMomentumBegin: () => {
+                    'worklet';
+                    scheduleOnRN(onFlingStart);
+                },
+                onMomentumEnd: () => {
+                    'worklet';
+                    scheduleOnRN(onFlingEnd);
+                },
+            } : null
+        ),
+        [isMultiDay, onFlingStart, onFlingEnd]
+    );
 
     const handleBlockLongPress = useCallback((resourceId: number, time: string) => {
         triggerHaptic("Medium");
@@ -710,6 +850,14 @@ const CalendarInner: React.FC<CalendarProps> = React.memo((props) => {
         };
     }, [setSelectedEvent, selectedEvent, setDragReady]);
 
+    const columnCount = !isMultiDay ? resourceIds.length : columns.length;
+
+    // Shared hatch layer: see HatchLayer. Bindings without the day-wide selector fall
+    // back to per-cell hatching.
+    const useHatchByDay = binding.useDisabledIntervalsByDay ?? useNoopBindingHook;
+    const hatchByDay = useHatchByDay(isMultiDay);
+    const hatchCommon = useHatchCommon(hatchByDay, columns, activeResourceId ?? resourceIds[0]);
+
     const renderItem = useCallback(({item, index}: any) => {
         // Resolve which date & resource this column represents:
         const rid = !isMultiDay
@@ -718,51 +866,36 @@ const CalendarInner: React.FC<CalendarProps> = React.memo((props) => {
 
         const dayDate = !isMultiDay
             ? undefined                            // day mode uses the single base day (existing)
-            : (item as Extract<Column, { kind: 'day' }>).dayDate;
+            : (item as Extract<CalendarColumn, { kind: 'day' }>).dayDate;
 
         return (
-            <View key={index} style={{width: APPOINTMENT_BLOCK_WIDTH}}>
-                {/* Add 15-minute background blocks for each user column */}
-                <View style={styles.timelineContainer}>
-                    <EventGridBlocksSkia
-                        rid={rid!}
-                        dayDate={dayDate}
-                        dateRef={dateRef}
-                        hourHeight={hourHeight}
-                        APPOINTMENT_BLOCK_WIDTH={APPOINTMENT_BLOCK_WIDTH}
-                        onBlockPress={stableHandleBlockPress}
-                        onBlockLongPress={stableHandleBlockLongPress}
-                    />
-                    <DisabledIntervals
-                        id={rid!}
-                        date={dayDate}
-                        APPOINTMENT_BLOCK_WIDTH={APPOINTMENT_BLOCK_WIDTH}
-                        hourHeight={hourHeight}
-                    />
-                    <DisabledBlocks
-                        id={rid!}
-                        date={dayDate}
-                        APPOINTMENT_BLOCK_WIDTH={APPOINTMENT_BLOCK_WIDTH}
-                        hourHeight={hourHeight}
-                        onDisabledBlockPress={stableOnDisabledBlockPress}
-                        tapThrough={props.disabledBlocksTapThrough}
-                    />
-                    <EventBlocks
-                        id={rid!}
-                        date={dayDate}
-                        EVENT_BLOCK_WIDTH={APPOINTMENT_BLOCK_WIDTH}
-                        hourHeight={hourHeight}
-                        onPress={stableOnPress}
-                        onLongPress={internalStableOnLongPress}
-                        isEventSelected={isEventSelectedStable}
-                        isEventDisabled={isEventDisabledStable}
-                        eventRenderer={effectiveRenderer}
-                        mode={overLappingLayoutMode}
-                    />
-                </View>
-            </View>
+            <ColumnCell
+                key={index}
+                rid={rid!}
+                dayDate={dayDate}
+                dateRef={dateRef}
+                hourHeight={hourHeight}
+                APPOINTMENT_BLOCK_WIDTH={APPOINTMENT_BLOCK_WIDTH}
+                onBlockPress={stableHandleBlockPress}
+                onBlockLongPress={stableHandleBlockLongPress}
+                onDisabledBlockPress={stableOnDisabledBlockPress}
+                tapThrough={props.disabledBlocksTapThrough}
+                onPress={stableOnPress}
+                onLongPress={internalStableOnLongPress}
+                isEventSelected={isEventSelectedStable}
+                isEventDisabled={isEventDisabledStable}
+                eventRenderer={effectiveRenderer}
+                mode={overLappingLayoutMode}
+                scrollState={listScrollState}
+                columnIndex={index}
+                numberOfColumns={numberOfColumns}
+                scrollX={scrollX}
+            />
         );
     }, [
+        numberOfColumns,
+        scrollX,
+        listScrollState,
         isMultiDay,
         activeResourceId,
         resourceIds,
@@ -808,7 +941,7 @@ const CalendarInner: React.FC<CalendarProps> = React.memo((props) => {
         ]
     );
 
-    return <>
+    return <HatchCommonContext.Provider value={hatchCommon}>
         <StoreFeeder resources={resources} store={binding} baseDate={date}/>
         <View style={{flex: 1}}>
             {
@@ -876,6 +1009,26 @@ const CalendarInner: React.FC<CalendarProps> = React.memo((props) => {
                         style={styles.container}
                         contentContainerStyle={{flexDirection: 'row', paddingRight: TIME_LABEL_WIDTH}}
                     >
+                        {/* Never wider than the real columns: with fewer resources than
+                            slots the area to the right stays white, as it did when the
+                            grid was drawn per cell. */}
+                        <GridBackdrop
+                            width={APPOINTMENT_BLOCK_WIDTH * Math.min(numberOfColumns, columnCount)}
+                            hourHeight={hourHeight}
+                        />
+                        <ColumnSeparators
+                            columnWidth={APPOINTMENT_BLOCK_WIDTH}
+                            numberOfColumns={numberOfColumns}
+                            columnCount={columnCount}
+                            hourHeight={hourHeight}
+                            scrollX={scrollX}
+                        />
+                        <HatchLayer
+                            width={APPOINTMENT_BLOCK_WIDTH * Math.min(numberOfColumns, columnCount)}
+                            hourHeight={hourHeight}
+                            scrollX={scrollX}
+                            common={hatchCommon}
+                        />
                         <TimeLabels
                             startMinutes={startMinutes}
                             layout={layout}
@@ -892,6 +1045,16 @@ const CalendarInner: React.FC<CalendarProps> = React.memo((props) => {
                             onScroll={flashListScrollHandler}  // Sync with header
                             data={!isMultiDay ? resourceIds : columns}
                             horizontal={true}
+                            // FlashList 2.x splits 2 * drawDistance by scroll direction
+                            // (EngagedIndicesTracker: 0.7 ahead, 0.3 behind). d = W keeps
+                            // exactly one column mounted ahead (1.4 W) and none behind
+                            // (0.6 W). Widening it to cover the column behind (d = W / 0.6)
+                            // was tried on a 70-staff store: the 2.3-column forward buffer
+                            // made a hard fling mount cells non-stop and the scroll
+                            // stuttered. A swipe back therefore lands on a cell that mounts
+                            // its frame at once and its cards when the fling settles
+                            // (ColumnCell), which is the cheaper trade on a low-end phone.
+                            drawDistance={APPOINTMENT_BLOCK_WIDTH}
                             renderItem={renderItem}
                             keyExtractor={(item, index) => index + ""}
                             snapToInterval={APPOINTMENT_BLOCK_WIDTH}
@@ -916,7 +1079,7 @@ const CalendarInner: React.FC<CalendarProps> = React.memo((props) => {
                 </Animated.View>
             </GestureDetector>
         </View>
-    </>
+    </HatchCommonContext.Provider>
 });
 
 const Calendar: React.FC<CalendarProps> = React.memo(({theme, ...rest}) => {
@@ -932,12 +1095,6 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#fff',
     },
-    timelineContainer: {
-        borderColor: '#ddd',
-        borderRightWidth: 1,
-        position: 'relative',
-        height: "100%",
-    }
 });
 
 export default Calendar;

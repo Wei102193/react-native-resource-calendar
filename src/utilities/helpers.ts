@@ -228,11 +228,25 @@ export const combineDateAndTime = (date: Date, time: string) => {
 };
 
 export const indexToDate = (index: number) => {
-    // Set the date with a specific hour
-    const dateWithHour = set(new Date(), {hours: index, minutes: 0, seconds: 0, milliseconds: 0});
+    // Fixed base day: the labels are cached for the process lifetime, and "today"
+    // on a DST-change day has no 2:00, which would drop a label.
+    const dateWithHour = set(new Date(2000, 0, 1), {hours: index, minutes: 0, seconds: 0, milliseconds: 0});
 
     // Format the date in 'h:mm A' format
     return format(dateWithHour, 'h:mm a'); // 'a' is for AM/PM in lowercase
+};
+
+// JS-side cache in front of the worklet formatter below: every event card formats
+// two of these on every render, and there are only 1440 distinct inputs.
+const MINUTES_TO_TIME_CACHE = new Map<number, string>();
+
+export const minutesToTimeCached = (totalMinutes: number): string => {
+    let s = MINUTES_TO_TIME_CACHE.get(totalMinutes);
+    if (s === undefined) {
+        s = minutesToTime(totalMinutes);
+        MINUTES_TO_TIME_CACHE.set(totalMinutes, s);
+    }
+    return s;
 };
 
 export const minutesToTime = (totalMinutes: number): string => {

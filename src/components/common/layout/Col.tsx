@@ -7,14 +7,23 @@ interface ColProps extends ViewProps {
 }
 
 const Col = ({children, divider, space, style}: ColProps) => {
+    // Fast path: with neither a divider nor a gap there is nothing to interleave,
+    // so skip Children.toArray and the per-child Fragment + spacer View entirely.
+    // Most callers in the calendar (every event card) are in this case.
+    if (space == null && divider == null) {
+        return <View style={[{flexDirection: "column"}, style]}>{children}</View>;
+    }
+
+    const items = React.Children.toArray(children);
+    const last = items.length - 1;
+
     return (
         <View style={[{flexDirection: "column"}, style]}>
-            {React.Children.toArray(children).map((child, index) => (
+            {items.map((child, index) => (
                 <React.Fragment key={index}>
                     {child}
-                    {index !== React.Children.toArray(children).length - 1 &&
-                        divider}
-                    {index !== React.Children.toArray(children).length - 1 &&
+                    {index !== last && divider}
+                    {index !== last && space != null &&
                         <View style={{height: space, width: "100%"}}/>}
                 </React.Fragment>
             ))}

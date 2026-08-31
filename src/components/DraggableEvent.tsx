@@ -23,6 +23,8 @@ type Props = {
         | ((event: Event) => StyleOverrides | undefined);
 };
 
+// Still a TextInput, unlike the static card: the time follows the finger on the UI
+// thread and RN cannot set a Text's children from there.
 const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
 type AnimatedTextInputProps = AnimatedProps<TextInputProps> & { text: string };
 export const DraggableEvent = ({
@@ -90,6 +92,9 @@ export const DraggableEvent = ({
             ? styleOverrides(selectedEvent) ?? {}
             : styleOverrides ?? {};
 
+    // See EventBlock: opaque backing so the meta icons can float over the time.
+    const cardBg = StyleSheet.flatten(resolved?.container)?.backgroundColor;
+
     const TopRight = slots?.TopRight;
     const Body = slots?.Body;
     const titleFace = useResolvedFont({fontWeight: '700'});
@@ -136,10 +141,17 @@ export const DraggableEvent = ({
                                 }, resolved?.desc]}>{selectedEvent?.description}</Text>
                         </>
                 }
+                {/* Same overlay treatment as EventBlock. `space` is gone with it: Row
+                    injects a spacer View between every child, which spaced the preview's
+                    icons differently from the card's and cost a native view per icon. */}
                 <Row style={{
                     position: "absolute",
-                    right: 2
-                }} space={2}>
+                    top: 0,
+                    right: 2,
+                    alignItems: "center",
+                    paddingLeft: 4,
+                    backgroundColor: cardBg
+                }}>
                     {TopRight ? <TopRight event={selectedEvent} ctx={{hourHeight}}/> : null}
                 </Row>
             </Col>
