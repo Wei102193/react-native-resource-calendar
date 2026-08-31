@@ -50,8 +50,7 @@ npx expo install \
 react-native-gesture-handler \
 react-native-reanimated \
 react-native-svg \
-@shopify/flash-list \
-@shopify/react-native-skia 
+@shopify/flash-list
 ```
 
 If you’re using bare React Native (not Expo), install them manually:
@@ -61,8 +60,7 @@ npm install \
 react-native-gesture-handler \
 react-native-reanimated \
 react-native-svg \
-@shopify/flash-list \
-@shopify/react-native-skia 
+@shopify/flash-list
 ```
 
 🟦 Optional: Haptics Support (Expo Only)

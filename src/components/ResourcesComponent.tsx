@@ -1,5 +1,6 @@
 // @flow
 import * as React from 'react';
+import {useCallback, useMemo, useRef} from 'react';
 import {Image, StyleProp, StyleSheet, Text, TouchableOpacity, View, ViewStyle} from "react-native";
 import {isUndefined} from "lodash";
 import Hidden from './common/layout/Hidden';
@@ -8,6 +9,7 @@ import Badge from './common/Badge';
 import Col from './common/layout/Col';
 import {Resource, ResourceRenderContext} from '@/types/calendarTypes';
 import {useCalendarBinding} from "@/store/bindings/BindingProvider";
+import {useNoopBindingHook} from "@/store/bindings/calendarStoreBinding";
 import {useResolvedFont} from "@/theme/ThemeContext";
 
 export type ResourceSlotProps = {
@@ -38,15 +40,54 @@ type ResourceComponentProps = {
     id: number;
     APPOINTMENT_BLOCK_WIDTH: number;
     onResourcePress?: (resource: Resource) => void;
-    date: Date;
+    /** The day, behind a ref: see ResourceComponent. */
+    dateRef: React.RefObject<Date>;
     slots?: ResourceSlots;
 }
 
-const ResourceComponent = ({id, onResourcePress, APPOINTMENT_BLOCK_WIDTH, date, slots}: ResourceComponentProps) => {
-    const {useResourceById, useEventsFor} =
-        useCalendarBinding();
-    const resource = useResourceById(id);
-    const events = useEventsFor(id, date);
+type DefaultStaffAvatarProps = {
+    id: number;
+    name?: string;
+    image?: string;
+    circleSize: number;
+    showBadge: boolean;
+    onPress: () => void;
+};
+
+const useEventCountFromArray = (id: number) => {
+    const binding = useCalendarBinding();
+    const date = binding.useGetDate();
+    return binding.useEventsFor(id, date)?.length ?? 0;
+};
+
+// The default header avatar (no `Avatar` slot) is the only part of the header that
+// subscribes to the event count, so a day change re-renders the badge and nothing else.
+const DefaultStaffAvatar = ({id, onPress, name, circleSize, image, showBadge}: DefaultStaffAvatarProps) => {
+    const binding = useCalendarBinding();
+    const useCount = binding.useEventCountForCurrentDay ?? useEventCountFromArray;
+    const eventCount = useCount(id);
+
+    return <StaffAvatar
+        onPress={onPress}
+        name={name}
+        circleSize={circleSize}
+        fontSize={16}
+        badge={showBadge ? eventCount : undefined}
+        image={image}
+    />;
+};
+
+// Header item. Memoised, and it subscribes to NOTHING that changes on a day change:
+// the day is not a prop and the item does not read the event count. `ctx.date` and
+// `ctx.eventCount` are lazy getters (read on access) for slots that want a value at
+// render time; a slot that must UPDATE with the count subscribes for itself, as the
+// default avatar above does. Net effect: a day change re-renders no header item,
+// only the badges whose number changed.
+const ResourceComponent = React.memo(({id, onResourcePress, APPOINTMENT_BLOCK_WIDTH, dateRef, slots}: ResourceComponentProps) => {
+    const binding = useCalendarBinding();
+    const resource = binding.useResourceById(id);
+    const useCountSnapshot = binding.useEventCountSnapshot ?? useNoopBindingHook;
+    const readEventCount = useCountSnapshot();
     const titleFace = useResolvedFont({fontWeight: '700'});
 
     // `resourcesById` is populated by StoreFeeder in an effect, so the first
@@ -58,16 +99,20 @@ const ResourceComponent = ({id, onResourcePress, APPOINTMENT_BLOCK_WIDTH, date, 
     const Label = activeSlots?.Label;
     const Bottom = activeSlots?.Bottom;
 
-    const ctx: ResourceRenderContext = {
+    const ctx = useMemo<ResourceRenderContext>(() => ({
         width: APPOINTMENT_BLOCK_WIDTH,
-        date,
-        eventCount: events?.length ?? 0,
-    };
+        get date() {
+            return dateRef.current;
+        },
+        get eventCount() {
+            return readEventCount ? readEventCount(id) : 0;
+        },
+    }), [APPOINTMENT_BLOCK_WIDTH, dateRef, readEventCount, id]);
 
-    const handlePress = () => {
+    const handlePress = useCallback(() => {
         if (onResourcePress)
             onResourcePress(resource);
-    };
+    }, [onResourcePress, resource]);
 
     return <Col style={[{
         alignItems: 'center',
@@ -82,13 +127,13 @@ const ResourceComponent = ({id, onResourcePress, APPOINTMENT_BLOCK_WIDTH, date, 
                     >
                         <Avatar resource={resource} ctx={ctx}/>
                     </TouchableOpacity>
-                    : <StaffAvatar
+                    : <DefaultStaffAvatar
+                        id={id}
                         onPress={handlePress}
                         name={resource?.name}
                         circleSize={Math.min(40, APPOINTMENT_BLOCK_WIDTH - 12)}
-                        fontSize={16}
-                        badge={TopRight ? undefined : events?.length}
                         image={resource?.avatar}
+                        showBadge={!TopRight}
                     />
             }
             {
@@ -111,14 +156,19 @@ const ResourceComponent = ({id, onResourcePress, APPOINTMENT_BLOCK_WIDTH, date, 
         }
         {Bottom && <Bottom resource={resource} ctx={ctx}/>}
     </Col>
-}
+});
 
-export const ResourcesComponent = ({resourceIds, onResourcePress, APPOINTMENT_BLOCK_WIDTH, date, slots}: Props) => {
+export const ResourcesComponent = React.memo(({resourceIds, onResourcePress, APPOINTMENT_BLOCK_WIDTH, date, slots}: Props) => {
+    // The day reaches the items through a ref, so a day change does not invalidate
+    // a single memoised header item.
+    const dateRef = useRef(date);
+    dateRef.current = date;
+
     return (
         <>
             {resourceIds?.map((id) => {
                 return <ResourceComponent
-                    date={date}
+                    dateRef={dateRef}
                     key={id}
                     id={id}
                     APPOINTMENT_BLOCK_WIDTH={APPOINTMENT_BLOCK_WIDTH}
@@ -128,7 +178,7 @@ export const ResourcesComponent = ({resourceIds, onResourcePress, APPOINTMENT_BL
             })}
         </>
     );
-}
+});
 
 interface StaffAvatarProps {
     circleSize?: number;

@@ -62,6 +62,11 @@ export type EventRenderContext = {
 
 export type CalendarMode = 'day' | '3days' | 'week';
 
+/** One column of the timeline: a resource in day mode, a day in the multi-day modes. */
+export type CalendarColumn =
+    | { kind: 'resource'; resourceId: ResourceId }
+    | { kind: 'day'; dayIndex: number; dayDate: Date };
+
 export type ResourceRenderContext = {
     /** Width of the resource header column, in px. */
     width: number;

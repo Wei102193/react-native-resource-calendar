@@ -113,6 +113,5 @@ Must be installed by consumers. All are listed as `external` in tsup so they're 
 - `react-native-gesture-handler ~2.30.0`
 - `react-native-worklets ^0.7.2`
 - `@shopify/flash-list ~2.3.1`
-- `@shopify/react-native-skia ~2.4.18`
 - `react-native-svg ~15.15.3`
 - `expo-haptics ~55.0.13` *(optional)*
